@@ -1,6 +1,6 @@
 # hanzi.repeat
 
-A spaced-repetition flashcard app for HSK 1 Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
+A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
 
 <img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 26 PM" src="https://github.com/user-attachments/assets/c7d3d1cb-529f-4596-b5f8-163d6341ca85" />
 
@@ -120,7 +120,7 @@ src/                        # Frontend (React + Vite)
 │   ├── DeckBrowser.tsx
 │   └── StatsScreen.tsx
 ├── data/
-│   └── index.ts            # Static HSK 1 seed data
+│   └── index.ts            # Static HSK seed data
 ├── types/index.ts
 └── styles/index.css        # Design tokens (light/dark), component styles
 
@@ -130,7 +130,7 @@ server/                     # Backend (Express + Drizzle + PostgreSQL)
 │   │   ├── schema.ts       # Drizzle schema: users, decks, words, user_progress
 │   │   ├── index.ts        # postgres client + drizzle instance
 │   │   ├── migrate.ts      # Programmatic migration runner
-│   │   └── seed.ts         # HSK 1 vocabulary seed
+│   │   └── seed.ts         # HSK vocabulary seed
 │   ├── middleware/
 │   │   └── auth.ts         # JWT signing + requireAuth middleware
 │   ├── routes/
