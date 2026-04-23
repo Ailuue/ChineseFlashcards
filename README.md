@@ -47,7 +47,7 @@ cp .env.example .env   # fill in DATABASE_URL, JWT_SECRET, PORT
 npm install
 npm run db:generate    # generate SQL migrations from schema
 npm run db:migrate     # apply migrations to the database
-npm run db:seed        # seed HSK 1 vocabulary (10 decks, 30 words)
+npm run db:seed        # seed HSK vocabulary (10 decks, 30 words)
 npm run dev            # start dev server with hot-reload (tsx watch)
 ```
 
