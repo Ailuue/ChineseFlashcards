@@ -9,6 +9,7 @@ interface DeckCardProps {
 
 const DeckCard = ({ deck, index }: DeckCardProps) => {
   const done = deck.progress === 1;
+  const learnedBg = done ? 'var(--ok)' : 'var(--fg)';
   return (
     <div className="card" style={{ position: 'relative', cursor: 'pointer', transition: 'border-color .12s' }}>
       <div className="card-header">
@@ -41,13 +42,12 @@ const DeckCard = ({ deck, index }: DeckCardProps) => {
       <div style={{ padding: '0 16px 14px' }}>
         <div style={{ display: 'flex', gap: 3 }}>
           {Array.from({ length: deck.total }).map((_, i) => (
-            // eslint-disable-next-line react/no-array-index-key
             <div
               key={i}
               style={{
                 flex: 1,
                 height: 4,
-                background: i < deck.learned ? (done ? 'var(--ok)' : 'var(--fg)') : 'var(--bg-sub)',
+                background: i < deck.learned ? learnedBg : 'var(--bg-sub)',
                 border: '1px solid var(--border)',
                 borderRadius: 1,
               }}

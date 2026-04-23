@@ -34,5 +34,9 @@ module.exports = {
     ],
     // Default parameter values in destructuring are the modern TS equivalent of defaultProps
     'react/require-default-props': ['error', { functions: 'defaultArguments' }],
+    // Array index is the correct key for purely decorative/positional elements (progress segments, sparkles)
+    'react/no-array-index-key': 'off',
+    // The // prefix is an intentional design label style throughout this app, not accidental JS comments
+    'react/jsx-no-comment-textnodes': 'off',
   },
 };

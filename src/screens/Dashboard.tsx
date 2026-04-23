@@ -16,7 +16,7 @@ interface StatCellProps {
 }
 
 const StatCell = ({
-  label, value, unit, accent, icon, sub,
+  label, value, unit = '', accent = false, icon = '', sub = '',
 }: StatCellProps) => (
   <div style={{ padding: '20px 22px', borderRight: '1px solid var(--border)' }}>
     <div
@@ -52,7 +52,7 @@ interface DueItemProps {
 }
 
 const DueItem = ({
-  deck, count, when, tone,
+  deck, count, when, tone = undefined,
 }: DueItemProps) => (
   <div style={{
     display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg-elev)', borderRadius: 2, cursor: 'pointer',
@@ -77,7 +77,7 @@ interface GoalRowProps {
 }
 
 const GoalRow = ({
-  label, value, max, unit,
+  label, value, max, unit = '',
 }: GoalRowProps) => {
   const pct = Math.min(1, value / max);
   return (

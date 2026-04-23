@@ -10,9 +10,10 @@ interface StatTileProps {
 }
 
 const StatTile = ({
-  label, value, accent, icon,
+  label, value, accent = undefined, icon = '',
 }: StatTileProps) => {
-  const color = accent === 'ok' ? 'var(--ok)' : accent === 'bad' ? 'var(--bad)' : 'var(--fg)';
+  const accentBad = accent === 'bad' ? 'var(--bad)' : 'var(--fg)';
+  const color = accent === 'ok' ? 'var(--ok)' : accentBad;
   return (
     <div style={{
       border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 2, background: 'var(--bg)',
@@ -114,7 +115,6 @@ const SessionSummary = ({
           }}
           >
             {TIMELINE_HEIGHTS.map((h, i) => (
-              // eslint-disable-next-line react/no-array-index-key
               <div
                 key={i}
                 style={{

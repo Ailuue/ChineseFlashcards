@@ -11,7 +11,7 @@ interface KPIProps {
 }
 
 const KPI = ({
-  label, value, delta, down,
+  label, value, delta, down = false,
 }: KPIProps) => (
   <div className="stat">
     <div className="label">{label}</div>
@@ -24,7 +24,11 @@ const KPI = ({
   </div>
 );
 
-const LINE_PTS = [68, 70, 72, 69, 74, 76, 73, 78, 77, 80, 79, 82, 81, 83, 80, 85, 83, 86, 84, 87, 85, 88, 86, 90, 88, 89, 86, 90, 88, 91];
+const LINE_PTS = [
+  68, 70, 72, 69, 74, 76, 73, 78, 77, 80,
+  79, 82, 81, 83, 80, 85, 83, 86, 84, 87,
+  85, 88, 86, 90, 88, 89, 86, 90, 88, 91,
+];
 const W = 560; const H = 160; const PAD = 16;
 
 const LineChart = () => {
@@ -45,7 +49,6 @@ const LineChart = () => {
       })}
       <path d={area} fill="var(--fg)" opacity="0.08" />
       <path d={d} stroke="var(--fg)" strokeWidth="1.5" fill="none" />
-      {/* eslint-disable-next-line react/no-array-index-key */}
       {xs.map((x, i) => <circle key={i} cx={x} cy={ys[i]} r={i === LINE_PTS.length - 1 ? 3 : 1.6} fill="var(--accent)" />)}
     </svg>
   );

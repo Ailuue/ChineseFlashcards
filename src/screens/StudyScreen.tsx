@@ -275,7 +275,6 @@ const StudyScreen = () => {
           {celebrate && Array.from({ length: 6 }).map((_, i) => {
             const angle = (i / 6) * Math.PI * 2;
             return (
-              // eslint-disable-next-line react/no-array-index-key
               <div
                 key={`${i}-${celebrate.t}`}
                 className="sparkle"

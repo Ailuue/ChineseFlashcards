@@ -5,7 +5,7 @@ interface TopbarProps {
   context?: string;
 }
 
-const Topbar = ({ context }: TopbarProps) => {
+const Topbar = ({ context = '' }: TopbarProps) => {
   const { tweaks, toggleTheme } = useTweaks();
   return (
     <div className="topbar">
