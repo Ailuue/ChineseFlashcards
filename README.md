@@ -3,7 +3,6 @@
 A spaced-repetition flashcard app for HSK 1 Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
 
 <img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 26 PM" src="https://github.com/user-attachments/assets/c7d3d1cb-529f-4596-b5f8-163d6341ca85" />
-<img width="428" height="936" alt="Screenshot 2026-04-23 at 7 16 54 PM" src="https://github.com/user-attachments/assets/9a845165-e049-4083-b35a-46bcc06fef1b" />
 
 
 ## Stack
@@ -105,10 +104,9 @@ The current data layer is static. The planned backend will add:
 ## More Screenshots
 
 <img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 16 PM" src="https://github.com/user-attachments/assets/4a90013e-57aa-4e18-89b3-7b063352b0f8" />
-<img width="428" height="936" alt="Screenshot 2026-04-23 at 7 16 47 PM" src="https://github.com/user-attachments/assets/1ac06a5f-1611-40a9-833b-ec5310647adb" />
 <img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 31 PM" src="https://github.com/user-attachments/assets/33c86fc5-4e7e-4789-a538-0f41ec93df8a" />
 <img width="428" height="936" alt="Screenshot 2026-04-23 at 7 16 58 PM" src="https://github.com/user-attachments/assets/9b493d77-0d50-4938-bf9a-64bf9dd0ae22" />
-<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 37 PM" src="https://github.com/user-attachments/assets/d2565f66-cf69-4afc-82b6-ac6fc3376548" />
-<img width="428" height="936" alt="Screenshot 2026-04-23 at 7 17 03 PM" src="https://github.com/user-attachments/assets/348fe73f-4d7d-477f-a4eb-ea084c286b53" />
+
+<img width="428" height="936" alt="Screenshot 2026-04-23 at 7 16 47 PM" src="https://github.com/user-attachments/assets/1ac06a5f-1611-40a9-833b-ec5310647adb" /><img width="428" height="936" alt="Screenshot 2026-04-23 at 7 16 54 PM" src="https://github.com/user-attachments/assets/47a0b766-7b1b-4be3-abbb-c068899d1ca4" /><img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 37 PM" src="https://github.com/user-attachments/assets/d2565f66-cf69-4afc-82b6-ac6fc3376548" /><img width="428" height="936" alt="Screenshot 2026-04-23 at 7 17 03 PM" src="https://github.com/user-attachments/assets/348fe73f-4d7d-477f-a4eb-ea084c286b53" />
 
 
