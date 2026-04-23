@@ -24,8 +24,10 @@ const Layout = () => {
   return (
     <div className={`app ${tweaks.gridBg ? 'grid-bg-dots' : ''}`}>
       <Topbar context={context} />
+      <div className="screen-content">
+        <Outlet />
+      </div>
       <Tabs />
-      <Outlet />
     </div>
   );
 };

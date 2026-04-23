@@ -129,32 +129,34 @@ body.theme-dark {
 .topbar .logo { font-weight: 600; color: var(--fg); letter-spacing: 0.04em; }
 .topbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
 
+/* Mobile-first: bottom tab bar */
 .tabs {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  background: var(--bg);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid var(--border);
+  background: var(--bg-elev);
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: 9.5px;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   flex-shrink: 0;
 }
 
 .tabs .tab {
-  padding: 10px 16px;
+  padding: 8px 4px 10px;
   color: var(--fg-muted);
-  border-right: 1px solid var(--border);
   cursor: pointer;
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 3px;
   text-decoration: none;
 }
 
 .tabs .tab.active {
   color: var(--fg);
-  background: var(--bg-elev);
 }
 
 .tabs .tab.active::after {
@@ -162,13 +164,13 @@ body.theme-dark {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -1px;
+  top: 0;
   height: 2px;
   background: var(--fg);
 }
 
-.tabs .tab .num { color: var(--fg-dim); font-size: 10px; }
-.tabs .spacer { flex: 1; border-bottom: 0; }
+.tabs .tab .tab-num { display: none; }
+.tabs .spacer { display: none; }
 
 .grid-bg {
   background-image:
@@ -470,4 +472,184 @@ body.theme-dark {
   padding: 1px 5px;
   border-radius: 2px;
   border: 1px solid var(--border);
+}
+
+/* ── Layout ─────────────────────────────────── */
+.screen-content {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* Topbar cells hidden on mobile */
+.topbar-desktop { display: none !important; }
+
+/* Tabs: icon + label */
+.tab-icon { display: flex; align-items: center; }
+
+/* ── Study screen ────────────────────────────── */
+.card-stage-outer {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  position: relative;
+  gap: 12px;
+}
+
+.card-stage {
+  width: 100%;
+  max-width: 480px;
+  height: 300px;
+  position: relative;
+}
+
+.card-hanzi-single { font-size: 120px; }
+.card-hanzi-multi  { font-size: 80px; }
+
+/* Mobile rate buttons: below card, visible when flipped */
+.rate-bar {
+  display: flex;
+  width: 100%;
+  max-width: 480px;
+  gap: 10px;
+  padding: 0 0 4px;
+}
+
+/* Desktop rate buttons: inside card back face */
+.rate-in-card { display: none; border-top: 1px solid var(--border); }
+
+.study-footer { display: none; }
+
+/* ── Dashboard ───────────────────────────────── */
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.dash-main-grid {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1px solid var(--border);
+}
+
+.dash-lower-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.heatmap-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* ── Stats screen ─────────────────────────────── */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+
+.stats-charts-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.stats-line-chart { display: none; }
+
+/* ── Session summary ─────────────────────────── */
+.summary-outer {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px 16px;
+  overflow-y: auto;
+}
+
+.summary-container {
+  width: 100%;
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.summary-stats-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 16px;
+}
+
+/* ── Desktop overrides (≥ 768px) ──────────────── */
+@media (min-width: 768px) {
+  /* Tabs: horizontal top bar */
+  .tabs {
+    display: flex;
+    grid-template-columns: none;
+    border-top: none;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    order: 1;
+  }
+
+  .tabs .tab {
+    padding: 10px 16px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    border-right: 1px solid var(--border);
+  }
+
+  .tabs .tab.active { background: var(--bg-elev); }
+
+  .tabs .tab.active::after {
+    top: auto;
+    bottom: -1px;
+    height: 2px;
+  }
+
+  .tabs .tab .tab-num { display: inline; color: var(--fg-dim); font-size: 10px; }
+  .tabs .spacer { display: flex; flex: 1; border-bottom: 0; }
+
+  /* Screen content after tabs */
+  .screen-content { order: 2; }
+
+  /* Topbar desktop cells */
+  .topbar-desktop { display: flex !important; }
+
+  /* Study */
+  .card-stage-outer { padding: 32px; flex-direction: row; }
+  .card-stage { width: 520px; max-width: 520px; height: 360px; }
+  .card-hanzi-single { font-size: 220px; }
+  .card-hanzi-multi  { font-size: 160px; }
+  .rate-bar { display: none; }
+  .rate-in-card { display: flex; }
+  .study-footer { display: flex; }
+
+  /* Dashboard */
+  .dash-stats-grid { grid-template-columns: repeat(4, 1fr); }
+  .dash-main-grid { display: grid; grid-template-columns: 1.45fr 1fr; }
+  .dash-lower-grid { display: grid; grid-template-columns: 1fr 1.2fr; }
+
+  /* Stats */
+  .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+  .stats-charts-grid { display: grid; grid-template-columns: 1.5fr 1fr; }
+  .stats-line-chart { display: block; }
+
+  /* Summary */
+  .summary-outer { align-items: center; padding: 40px; }
+  .summary-stats-card { flex-direction: row; align-items: center; gap: 20px; padding: 24px; }
 }

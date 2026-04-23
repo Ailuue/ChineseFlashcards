@@ -159,20 +159,14 @@ const Dashboard = () => (
       </button>
     </div>
 
-    <div style={{
-      display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 0, borderBottom: '1px solid var(--border)',
-    }}
-    >
+    <div className="dash-stats-grid">
       <StatCell label="current streak" value="12" unit="days" accent icon="flame" sub="personal best: 18" />
       <StatCell label="words learned" value="87" unit="/ 150" sub="+6 this week" />
       <StatCell label="accuracy" value="84" unit="%" sub="↑ 2.1 pts" />
       <StatCell label="time today" value="0" unit="min" sub="goal · 10 min" />
     </div>
 
-    <div style={{
-      display: 'grid', gridTemplateColumns: '1.45fr 1fr', gap: 0, borderBottom: '1px solid var(--border)',
-    }}
-    >
+    <div className="dash-main-grid">
       <div style={{ padding: '20px 28px', borderRight: '1px solid var(--border)' }}>
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14,
@@ -188,7 +182,7 @@ const Dashboard = () => (
             days
           </div>
         </div>
-        <Heatmap data={HEATMAP_DATA} />
+        <div className="heatmap-scroll"><Heatmap data={HEATMAP_DATA} /></div>
       </div>
 
       <div style={{ padding: '20px 28px' }}>
@@ -202,7 +196,7 @@ const Dashboard = () => (
       </div>
     </div>
 
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: 0 }}>
+    <div className="dash-lower-grid">
       <div style={{ padding: '20px 28px', borderRight: '1px solid var(--border)' }}>
         <div className="sec-label" style={{ marginBottom: 14 }}>// pinned · daily mix</div>
         <div className="card" style={{ padding: 18 }}>

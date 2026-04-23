@@ -35,20 +35,6 @@ const StudyScreen = () => {
   const rate = useCallback((got: boolean) => {
     setReviewed((n) => n + 1);
 
-    setQueue((prev) => {
-      const next = prev.slice();
-      const card = next[0];
-      if (!got) {
-        const updated = { ...card, attempts: card.attempts + 1 };
-        next.splice(0, 1);
-        next.splice(Math.min(2, next.length), 0, updated);
-      } else {
-        next.splice(0, 1);
-      }
-      if (next.length === 0) setTimeout(() => setDone(true), 250);
-      return next;
-    });
-
     if (got) {
       setCorrect((n) => n + 1);
       setStreak((s) => { if (s + 1 >= 3) setCelebrate({ t: Date.now() }); return s + 1; });
@@ -57,7 +43,28 @@ const StudyScreen = () => {
       setStreak(0);
     }
 
-    setTimeout(() => setFlipped(false), 200);
+    // Start flip back to front immediately
+    setFlipped(false);
+
+    // Swap card content at the midpoint of the flip (~65 ms), just as the card
+    // passes through 90° where backface-visibility: hidden makes both faces
+    // invisible — so the new card's front emerges cleanly from behind the turn.
+    setTimeout(() => {
+      setQueue((prev) => {
+        const next = prev.slice();
+        const card = next[0];
+        if (!got) {
+          const updated = { ...card, attempts: card.attempts + 1 };
+          next.splice(0, 1);
+          next.splice(Math.min(2, next.length), 0, updated);
+        } else {
+          next.splice(0, 1);
+        }
+        // Wait for the remainder of the flip animation before showing the summary
+        if (next.length === 0) setTimeout(() => setDone(true), 500);
+        return next;
+      });
+    }, 65);
   }, []);
 
   useEffect(() => {
@@ -165,11 +172,8 @@ const StudyScreen = () => {
       </div>
 
       {/* Flip card stage */}
-      <div style={{
-        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32, position: 'relative',
-      }}
-      >
-        <div style={{ width: 520, height: 360, position: 'relative' }}>
+      <div className="card-stage-outer">
+        <div className="card-stage">
           {/* stacked shadow cards */}
           <div style={{
             position: 'absolute', inset: 0, transform: 'translate(8px, 8px)', border: '1px solid var(--border)', background: 'var(--bg-sub)', borderRadius: 2,
@@ -202,14 +206,15 @@ const StudyScreen = () => {
                   flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20,
                 }}
                 >
-                  <div style={{
-                    fontFamily: hanFont,
-                    fontSize: hanzi.length > 1 ? 160 : 220,
-                    lineHeight: 1,
-                    color: 'var(--fg)',
-                    fontWeight: 400,
-                    letterSpacing: hanzi.length > 1 ? '0.06em' : 0,
-                  }}
+                  <div
+                    className={hanzi.length > 1 ? 'card-hanzi-multi' : 'card-hanzi-single'}
+                    style={{
+                      fontFamily: hanFont,
+                      lineHeight: 1,
+                      color: 'var(--fg)',
+                      fontWeight: 400,
+                      letterSpacing: hanzi.length > 1 ? '0.06em' : 0,
+                    }}
                   >
                     {hanzi}
                   </div>
@@ -268,7 +273,7 @@ const StudyScreen = () => {
                     &rdquo;
                   </div>
                 </div>
-                <div style={{ display: 'flex', borderTop: '1px solid var(--border)' }}>
+                <div className="rate-in-card">
                   <button type="button" className="rate wrong" onClick={(e) => { e.stopPropagation(); rate(false); }} style={{ border: 'none', borderRight: '1px solid var(--border)', background: 'transparent' }}>
                     <span className="glyph"><Icon name="x" size={16} stroke={2} /></span>
                     <span>Got it Wrong</span>
@@ -302,12 +307,33 @@ const StudyScreen = () => {
             );
           })}
         </div>
+
+        {/* Mobile rate buttons: outside card, below stage */}
+        <div
+          className="rate-bar"
+          style={{
+            opacity: flipped ? 1 : 0.35,
+            transition: 'opacity 0.2s',
+            pointerEvents: flipped ? 'auto' : 'none',
+          }}
+        >
+          <button type="button" className="rate wrong" onClick={() => rate(false)}>
+            <span className="glyph"><Icon name="x" size={16} stroke={2} /></span>
+            <span>Wrong</span>
+          </button>
+          <button type="button" className="rate right" onClick={() => rate(true)}>
+            <span className="glyph"><Icon name="check" size={16} stroke={2} /></span>
+            <span>Right</span>
+          </button>
+        </div>
       </div>
 
       {/* Footer shortcuts */}
-      <div style={{
-        display: 'flex', padding: '10px 28px', borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-dim)', letterSpacing: '0.05em', justifyContent: 'space-between', flexShrink: 0,
-      }}
+      <div
+        className="study-footer"
+        style={{
+          padding: '10px 28px', borderTop: '1px solid var(--border)', fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-dim)', letterSpacing: '0.05em', justifyContent: 'space-between', flexShrink: 0,
+        }}
       >
         <span>
           shortcuts ·

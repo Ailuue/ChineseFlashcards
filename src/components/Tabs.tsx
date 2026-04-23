@@ -1,19 +1,27 @@
 import { NavLink } from 'react-router-dom';
+import Icon from './Icon';
 
 interface TabDef {
   to: string;
   end?: boolean;
   label: string;
   num: string;
+  icon: string;
 }
 
 const TAB_LIST: TabDef[] = [
   {
-    to: '/', end: true, label: 'Dashboard', num: '01',
+    to: '/', end: true, label: 'Dashboard', num: '01', icon: 'grid',
   },
-  { to: '/study', label: 'Study', num: '02' },
-  { to: '/decks', label: 'Decks', num: '03' },
-  { to: '/stats', label: 'Stats', num: '04' },
+  {
+    to: '/study', label: 'Study', num: '02', icon: 'play',
+  },
+  {
+    to: '/decks', label: 'Decks', num: '03', icon: 'book',
+  },
+  {
+    to: '/stats', label: 'Stats', num: '04', icon: 'chart',
+  },
 ];
 
 const Tabs = () => (
@@ -25,7 +33,8 @@ const Tabs = () => (
         end={t.end}
         className={({ isActive }) => `tab${isActive ? ' active' : ''}`}
       >
-        <span className="num">{t.num}</span>
+        <span className="tab-icon"><Icon name={t.icon} size={16} /></span>
+        <span className="tab-num">{t.num}</span>
         <span>{t.label}</span>
       </NavLink>
     ))}

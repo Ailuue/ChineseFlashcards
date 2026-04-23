@@ -103,15 +103,15 @@ const StatsScreen = () => {
         <div style={{ fontSize: 24, fontWeight: 600, letterSpacing: '-0.02em' }}>Your progress · 30 days</div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>
+      <div className="kpi-grid">
         <KPI label="reviews" value="214" delta="+32%" />
         <KPI label="accuracy" value="84%" delta="+2.1 pts" />
         <KPI label="retention · 7d" value="91%" delta="+4 pts" />
         <KPI label="avg session" value="6:12" delta="-0:48" down />
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: 14 }}>
-        <div className="card">
+      <div className="stats-charts-grid">
+        <div className="card stats-line-chart">
           <div className="card-header">
             <span>// accuracy_trend · 30d</span>
             <span className="mono" style={{ fontSize: 10 }}>y · %</span>
@@ -140,7 +140,7 @@ const StatsScreen = () => {
           <span>// contributions · 52w</span>
           <span className="mono" style={{ fontSize: 10 }}>214 reviews · 89 active days · longest streak 18d</span>
         </div>
-        <div style={{ padding: 18 }}><Heatmap data={HEATMAP_DATA} /></div>
+        <div style={{ padding: 18 }}><div className="heatmap-scroll"><Heatmap data={HEATMAP_DATA} /></div></div>
       </div>
 
       <div className="card">

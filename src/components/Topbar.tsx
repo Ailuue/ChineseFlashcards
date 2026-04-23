@@ -13,12 +13,12 @@ const Topbar = ({ context = '' }: TopbarProps) => {
         <span className="han" style={{ fontSize: 14, letterSpacing: 0 }}>汉</span>
         <span>hanzi.repeat</span>
       </div>
-      <div className="cell muted">v0.1.0</div>
-      <div className="cell muted" style={{ display: 'flex', gap: 6 }}>
+      <div className="cell muted topbar-desktop">v0.1.0</div>
+      <div className="cell muted topbar-desktop" style={{ display: 'flex', gap: 6 }}>
         <span className="dot" />
         <span>session · active</span>
       </div>
-      {context && <div className="cell muted">{context}</div>}
+      {context && <div className="cell muted topbar-desktop">{context}</div>}
       <div
         className="cell right muted"
         style={{ cursor: 'pointer' }}
@@ -31,7 +31,7 @@ const Topbar = ({ context = '' }: TopbarProps) => {
         <Icon name={tweaks.theme === 'dark' ? 'sun' : 'moon'} size={12} />
         <span>{tweaks.theme === 'dark' ? 'light' : 'dark'}</span>
       </div>
-      <div className="cell right muted">@dev</div>
+      <div className="cell right muted topbar-desktop">@dev</div>
     </div>
   );
 };

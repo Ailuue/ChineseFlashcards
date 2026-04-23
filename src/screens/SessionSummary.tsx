@@ -51,14 +51,8 @@ const SessionSummary = ({
 }: SessionSummaryProps) => {
   const acc = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
   return (
-    <div style={{
-      flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40, overflowY: 'auto',
-    }}
-    >
-      <div style={{
-        width: 520, display: 'flex', flexDirection: 'column', gap: 20,
-      }}
-      >
+    <div className="summary-outer">
+      <div className="summary-container">
         <div>
           <div className="sec-label" style={{ marginBottom: 6 }}>// session_complete.log</div>
           <div style={{ fontSize: 32, fontWeight: 600, letterSpacing: '-0.02em' }}>Nice work.</div>
@@ -71,12 +65,7 @@ const SessionSummary = ({
           </div>
         </div>
 
-        <div
-          className="card"
-          style={{
-            padding: 24, display: 'flex', alignItems: 'center', gap: 20,
-          }}
-        >
+        <div className="card summary-stats-card">
           <div style={{ flex: '0 0 120px' }}>
             <div
               className="mono"
