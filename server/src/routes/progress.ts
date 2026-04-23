@@ -95,7 +95,7 @@ router.post('/:wordId/review', async (req, res) => {
   }
 
   const { correct } = parsed.data;
-  const userId = req.user!.userId;
+  const { userId } = req.user!;
 
   // Get or create progress record
   let existing = await db.query.userProgress.findFirst({

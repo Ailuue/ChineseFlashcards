@@ -23,6 +23,10 @@ router.get('/', async (req, res) => {
 
   const { deck, q, limit, offset } = parsed.data;
 
+  let whereClause;
+  if (deck) whereClause = eq(decks.name, deck);
+  else if (q) whereClause = ilike(words.simplified, `%${q}%`);
+
   const rows = await db
     .select({
       id: words.id,
@@ -36,11 +40,7 @@ router.get('/', async (req, res) => {
     })
     .from(words)
     .innerJoin(decks, eq(words.deckId, decks.id))
-    .where(
-      deck ? eq(decks.name, deck)
-        : q ? ilike(words.simplified, `%${q}%`)
-          : undefined,
-    )
+    .where(whereClause)
     .limit(limit)
     .offset(offset);
 
