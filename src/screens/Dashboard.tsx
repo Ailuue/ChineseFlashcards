@@ -111,7 +111,7 @@ const RecentRow = ({ card, status }: RecentRowProps) => {
   const { tweaks } = useTweaks();
   return (
     <div className="row">
-      <div className="han" style={{ fontSize: 22, color: 'var(--fg)', minWidth: 44 }}>{card.hanzi}</div>
+      <div className="han" style={{ fontSize: 22, color: 'var(--fg)', minWidth: 44 }}>{card[tweaks.script]}</div>
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column', gap: 2,
       }}
@@ -237,7 +237,7 @@ const Dashboard = () => (
         <div className="sec-label" style={{ marginBottom: 14 }}>// last_reviewed</div>
         <div className="card">
           {HSK1.slice(0, 5).map((c, i) => (
-            <RecentRow key={c.hanzi} card={c} status={i % 3 === 1 ? 'wrong' : 'right'} />
+            <RecentRow key={c.simplified} card={c} status={i % 3 === 1 ? 'wrong' : 'right'} />
           ))}
         </div>
       </div>

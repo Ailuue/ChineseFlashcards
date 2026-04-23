@@ -1,5 +1,6 @@
 export interface FlashCard {
-  hanzi: string;
+  simplified: string;
+  traditional: string;
   pinyin: string;
   tones: number[];
   meaning: string;
@@ -21,6 +22,7 @@ export interface DeckSummary {
 
 export interface Tweaks {
   theme: 'light' | 'dark';
+  script: 'simplified' | 'traditional';
   gridBg: boolean;
   toneColor: boolean;
   serifHan: boolean;

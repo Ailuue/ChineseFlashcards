@@ -7,12 +7,14 @@ interface TweaksContextValue {
   tweaks: Tweaks;
   updateTweaks: (next: Tweaks) => void;
   toggleTheme: () => void;
+  toggleScript: () => void;
 }
 
 const TweaksContext = createContext<TweaksContextValue | null>(null);
 
 const DEFAULTS: Tweaks = {
   theme: 'dark',
+  script: 'simplified',
   gridBg: true,
   toneColor: true,
   serifHan: true,
@@ -26,6 +28,7 @@ export const TweaksProvider = ({ children }: { children: ReactNode }) => {
     tweaks,
     updateTweaks: setTweaks,
     toggleTheme: () => setTweaks((t) => ({ ...t, theme: t.theme === 'dark' ? 'light' : 'dark' })),
+    toggleScript: () => setTweaks((t) => ({ ...t, script: t.script === 'simplified' ? 'traditional' : 'simplified' })),
   }), [tweaks]);
 
   return <TweaksContext.Provider value={value}>{children}</TweaksContext.Provider>;

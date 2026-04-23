@@ -153,9 +153,9 @@ const StatsScreen = () => {
           </span>
         </div>
         {STRUGGLES.map((r, i) => (
-          <div className="row" key={r.c.hanzi}>
+          <div className="row" key={r.c.simplified}>
             <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', width: 24 }}>{String(i + 1).padStart(2, '0')}</span>
-            <div className="han" style={{ fontSize: 24, minWidth: 52 }}>{r.c.hanzi}</div>
+            <div className="han" style={{ fontSize: 24, minWidth: 52 }}>{r.c[tweaks.script]}</div>
             <div style={{ flex: 1 }}>
               {tweaks.toneColor
                 ? <Pinyin pinyin={r.c.pinyin} tones={r.c.tones} size={13} />

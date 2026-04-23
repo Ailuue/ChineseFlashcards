@@ -9,7 +9,7 @@ import SessionSummary from './SessionSummary';
 const makeQueue = (): SessionCard[] => SESSION_DECK.map((c, i) => ({ ...c, id: i, attempts: 0 }));
 
 const StudyScreen = () => {
-  const { tweaks } = useTweaks();
+  const { tweaks, toggleScript } = useTweaks();
   const [queue, setQueue] = useState<SessionCard[]>(makeQueue);
   const [flipped, setFlipped] = useState(false);
   const [reviewed, setReviewed] = useState(0);
@@ -92,6 +92,7 @@ const StudyScreen = () => {
   const total = SESSION_DECK.length;
   const position = total - queue.length + 1;
   const hanFont = tweaks.serifHan ? 'var(--font-han)' : '"Noto Sans SC", "PingFang SC", sans-serif';
+  const hanzi = card ? card[tweaks.script] : '';
 
   return (
     <div style={{
@@ -149,6 +150,17 @@ const StudyScreen = () => {
             {' '}
             streak
           </span>
+          <button
+            type="button"
+            className="btn ghost"
+            onClick={toggleScript}
+            style={{ padding: '3px 8px', fontSize: 11, gap: 4 }}
+            title={`switch to ${tweaks.script === 'simplified' ? 'traditional' : 'simplified'}`}
+          >
+            <span style={{ color: tweaks.script === 'simplified' ? 'var(--fg)' : 'var(--fg-dim)' }}>简</span>
+            {' · '}
+            <span style={{ color: tweaks.script === 'traditional' ? 'var(--fg)' : 'var(--fg-dim)' }}>繁</span>
+          </button>
         </div>
       </div>
 
@@ -192,14 +204,14 @@ const StudyScreen = () => {
                 >
                   <div style={{
                     fontFamily: hanFont,
-                    fontSize: card && card.hanzi.length > 1 ? 160 : 220,
+                    fontSize: hanzi.length > 1 ? 160 : 220,
                     lineHeight: 1,
                     color: 'var(--fg)',
                     fontWeight: 400,
-                    letterSpacing: card && card.hanzi.length > 1 ? '0.06em' : 0,
+                    letterSpacing: hanzi.length > 1 ? '0.06em' : 0,
                   }}
                   >
-                    {card?.hanzi}
+                    {hanzi}
                   </div>
                 </div>
                 <div style={{
@@ -219,7 +231,7 @@ const StudyScreen = () => {
                     · to reveal
                   </span>
                   <span className="mono" style={{ fontSize: 10, color: 'var(--fg-dim)' }}>
-                    {card?.hanzi.length}
+                    {hanzi.length}
                     {' '}
                     chars
                   </span>
@@ -240,7 +252,7 @@ const StudyScreen = () => {
                     fontFamily: hanFont, fontSize: 56, lineHeight: 1, color: 'var(--fg-muted)',
                   }}
                   >
-                    {card?.hanzi}
+                    {hanzi}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     {tweaks.toneColor
