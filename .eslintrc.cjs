@@ -1,0 +1,38 @@
+module.exports = {
+  root: true,
+  env: { browser: true, es2020: true },
+  extends: [
+    'airbnb',
+    'airbnb-typescript',
+    'airbnb/hooks',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    project: './tsconfig.json',
+  },
+  plugins: ['@typescript-eslint'],
+  settings: {
+    'import/resolver': {
+      typescript: { project: './tsconfig.json' },
+    },
+  },
+  rules: {
+    // Point the import plugin at the root package.json so it resolves dependencies correctly
+    'import/no-extraneous-dependencies': ['error', { packageDir: [__dirname] }],
+    // Airbnb bans default export in some cases; keep defaults for page-level components
+    'import/prefer-default-export': 'off',
+    // Allow JSX in .tsx files only
+    'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
+    // With new JSX transform, React import is not needed
+    'react/react-in-jsx-scope': 'off',
+    // Named arrow-function components are fine
+    'react/function-component-definition': [
+      'error',
+      { namedComponents: 'arrow-function', unnamedComponents: 'arrow-function' },
+    ],
+    // Default parameter values in destructuring are the modern TS equivalent of defaultProps
+    'react/require-default-props': ['error', { functions: 'defaultArguments' }],
+  },
+};

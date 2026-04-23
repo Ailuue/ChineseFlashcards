@@ -1,0 +1,39 @@
+import { useTweaks } from '../context/TweaksContext';
+import Icon from './Icon';
+
+interface TopbarProps {
+  context?: string;
+}
+
+const Topbar = ({ context }: TopbarProps) => {
+  const { tweaks, toggleTheme } = useTweaks();
+  return (
+    <div className="topbar">
+      <div className="cell logo">
+        <span className="han" style={{ fontSize: 14, letterSpacing: 0 }}>汉</span>
+        <span>hanzi.repeat</span>
+      </div>
+      <div className="cell muted">v0.1.0</div>
+      <div className="cell muted" style={{ display: 'flex', gap: 6 }}>
+        <span className="dot" />
+        <span>session · active</span>
+      </div>
+      {context && <div className="cell muted">{context}</div>}
+      <div
+        className="cell right muted"
+        style={{ cursor: 'pointer' }}
+        onClick={toggleTheme}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && toggleTheme()}
+        title="toggle theme"
+      >
+        <Icon name={tweaks.theme === 'dark' ? 'sun' : 'moon'} size={12} />
+        <span>{tweaks.theme === 'dark' ? 'light' : 'dark'}</span>
+      </div>
+      <div className="cell right muted">@dev</div>
+    </div>
+  );
+};
+
+export default Topbar;

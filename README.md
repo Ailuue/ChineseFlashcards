@@ -1,0 +1,99 @@
+# Hanzi · Repeat
+
+A spaced-repetition flashcard app for HSK 1 Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
+
+## Stack
+
+- **React 18** with **TypeScript** (strict mode)
+- **Vite** for development and bundling
+- **React Router v6** for client-side routing
+- **CSS custom properties** for theming (no CSS-in-JS, no framework)
+- **ESLint** with the Airbnb style guide
+
+## Getting Started
+
+```bash
+yarn install
+yarn start
+```
+
+Runs the app at `http://localhost:5173`.
+
+| Command | Description |
+|---|---|
+| `yarn start` | Start the dev server |
+| `yarn build` | Type-check and build for production |
+| `yarn preview` | Preview the production build locally |
+| `yarn lint` | Lint all `.ts` / `.tsx` files |
+
+## Screens
+
+| Route | Screen |
+|---|---|
+| `/` | Dashboard — streak, due queue, activity heatmap, goals |
+| `/study` | Study mode — flip cards, rate, spaced repetition |
+| `/decks` | Deck browser — all HSK 1 decks with progress |
+| `/stats` | Stats — accuracy trends, tone breakdown, contribution heatmap |
+
+## Study Mode
+
+Cards cycle through three states without changing routes:
+
+1. **Front** — large hanzi character, click or press `Space` to reveal
+2. **Back** — tone-colored pinyin, meaning, audio button; press `1` (wrong) or `2` (right)
+3. **Summary** — accuracy, streak, timeline; restart without a page reload
+
+Wrong cards are requeued two positions ahead (simple SRS). A streak of 3+ correct answers triggers a sparkle animation.
+
+## Project Structure
+
+```
+src/
+├── App.tsx                 # BrowserRouter + Routes
+├── index.tsx               # React root mount
+├── context/
+│   └── TweaksContext.tsx   # Theme + display preferences (React Context)
+├── components/
+│   ├── Layout.tsx          # Shared shell: Topbar + Tabs + Outlet
+│   ├── Topbar.tsx
+│   ├── Tabs.tsx            # NavLink-based tab navigation
+│   ├── Icon.tsx            # Inline SVG icon set
+│   ├── Pinyin.tsx          # Tone-colored pinyin renderer
+│   ├── Heatmap.tsx         # GitHub-style contribution heatmap
+│   ├── ProgressBar.tsx
+│   └── TweaksPanel.tsx     # Display preference toggles
+├── screens/
+│   ├── Dashboard.tsx
+│   ├── StudyScreen.tsx     # Flip card state machine
+│   ├── SessionSummary.tsx  # Post-session results
+│   ├── DeckBrowser.tsx
+│   └── StatsScreen.tsx
+├── data/
+│   └── index.ts            # HSK 1 vocabulary, deck metadata, heatmap seed
+├── types/
+│   └── index.ts            # FlashCard, DeckSummary, Tweaks, SessionCard
+└── styles/
+    └── index.css           # Design tokens (light/dark), component styles
+```
+
+## Design
+
+The aesthetic targets a dev-portfolio look: monospace labels, thin 1px borders, a warm paper light mode, and a deep ink dark mode. Toggle between them with the button in the top-right corner of the topbar.
+
+Standard pinyin tone colors are used throughout:
+
+| Tone | Color |
+|---|---|
+| 1st (high flat) | Red |
+| 2nd (rising) | Orange |
+| 3rd (dipping) | Green |
+| 4th (falling) | Blue |
+| Neutral | Gray |
+
+## Roadmap
+
+The current data layer is static. The planned backend will add:
+
+- PostgreSQL — user accounts, deck ownership, review history
+- Node / Express / TypeScript API — SRS scheduling (SM-2 algorithm), deck CRUD
+- Deployment — Vercel (frontend) + Railway (API + database)
