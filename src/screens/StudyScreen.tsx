@@ -2,17 +2,25 @@ import { useState, useEffect, useCallback } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { SessionCard } from '../types'
-import { api } from '../api/client'
+import { api, type Word } from '../api/client'
 import Icon from '../components/Icon'
 import Pinyin from '../components/Pinyin'
 import SessionSummary from './SessionSummary'
 
+const pickCards = (pool: Word[], n: number): SessionCard[] => {
+  const shuffled = [...pool]
+  for (let i = shuffled.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled.slice(0, n).map((w) => ({ ...w, attempts: 0 }))
+}
+
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
   const location = useLocation()
-  const routeState = location.state as { count?: number; total?: number } | null
-  const sessionCount = routeState?.count ?? 20
-  const poolSize = routeState?.total ?? sessionCount
+  const sessionCount = (location.state as { count?: number } | null)?.count ?? 20
+  const [wordPool, setWordPool] = useState<Word[]>([])
   const [loadedCards, setLoadedCards] = useState<SessionCard[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [queue, setQueue] = useState<SessionCard[]>([])
@@ -25,23 +33,22 @@ const StudyScreen = () => {
   const [done, setDone] = useState(false)
 
   useEffect(() => {
-    api.words({ limit: poolSize })
+    api.words({ limit: 1 })
+      .then((r) => api.words({ limit: r.total }))
       .then((res) => {
-        const pool = res.words
-        for (let i = pool.length - 1; i > 0; i -= 1) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [pool[i], pool[j]] = [pool[j], pool[i]]
-        }
-        const cards = pool.slice(0, sessionCount).map((w) => ({ ...w, attempts: 0 }))
+        setWordPool(res.words)
+        const cards = pickCards(res.words, sessionCount)
         setLoadedCards(cards)
         setQueue(cards)
       })
       .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : 'Failed to load cards'))
-  }, [sessionCount, poolSize])
+  }, [sessionCount])
 
   const resetSession = useCallback(() => {
-    if (!loadedCards) return
-    setQueue(loadedCards.map((c) => ({ ...c, attempts: 0 })))
+    if (!wordPool.length) return
+    const cards = pickCards(wordPool, sessionCount)
+    setLoadedCards(cards)
+    setQueue(cards)
     setFlipped(false)
     setReviewed(0)
     setCorrect(0)
@@ -49,7 +56,7 @@ const StudyScreen = () => {
     setStreak(0)
     setCelebrate(null)
     setDone(false)
-  }, [loadedCards])
+  }, [wordPool, sessionCount])
 
   const flip = useCallback(() => setFlipped((f) => !f), [])
 
