@@ -143,6 +143,15 @@ const StudyScreen = () => {
   const hanFont = tweaks.serifHan ? 'var(--font-han)' : '"Noto Sans SC", "PingFang SC", sans-serif'
   const hanzi = card ? card[tweaks.script] : ''
 
+  const hanziClass = (() => {
+    const len = hanzi.length
+    if (len <= 1) return 'card-hanzi-1'
+    if (len === 2) return 'card-hanzi-2'
+    if (len === 3) return 'card-hanzi-3'
+    if (len === 4) return 'card-hanzi-4'
+    return 'card-hanzi-5'
+  })()
+
   return (
     <div style={{
       flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden',
@@ -249,7 +258,7 @@ const StudyScreen = () => {
                 }}
                 >
                   <div
-                    className={hanzi.length > 1 ? 'card-hanzi-multi' : 'card-hanzi-single'}
+                    className={hanziClass}
                     style={{
                       fontFamily: hanFont,
                       lineHeight: 1,

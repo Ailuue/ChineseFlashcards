@@ -508,8 +508,11 @@ body.theme-dark {
   position: relative;
 }
 
-.card-hanzi-single { font-size: 120px; }
-.card-hanzi-multi  { font-size: 80px; }
+.card-hanzi-1 { font-size: 120px; }
+.card-hanzi-2 { font-size: 80px; }
+.card-hanzi-3 { font-size: 72px; }
+.card-hanzi-4 { font-size: 58px; }
+.card-hanzi-5 { font-size: 46px; }
 
 /* Mobile rate buttons: below card, visible when flipped */
 .rate-bar {
@@ -633,8 +636,11 @@ body.theme-dark {
   /* Study */
   .card-stage-outer { padding: 32px; flex-direction: row; }
   .card-stage { width: 520px; max-width: 520px; height: 360px; }
-  .card-hanzi-single { font-size: 220px; }
-  .card-hanzi-multi  { font-size: 160px; }
+  .card-hanzi-1 { font-size: 220px; }
+  .card-hanzi-2 { font-size: 160px; }
+  .card-hanzi-3 { font-size: 140px; }
+  .card-hanzi-4 { font-size: 105px; }
+  .card-hanzi-5 { font-size: 80px; }
   .rate-bar { display: none; }
   .rate-in-card { display: flex; }
   .study-footer { display: flex; }
