@@ -57,6 +57,11 @@ export const api = {
 
   me: () => request<AuthUser>('/api/auth/me'),
 
+  recordReview: (wordId: number, correct: boolean) => request<{ progress: unknown }>(
+    `/api/progress/${wordId}/review`,
+    { method: 'POST', body: JSON.stringify({ correct }) },
+  ),
+
   words: (params?: { limit?: number; deck?: string; q?: string }) => {
     const qs = new URLSearchParams()
     if (params?.limit != null) qs.set('limit', String(params.limit))

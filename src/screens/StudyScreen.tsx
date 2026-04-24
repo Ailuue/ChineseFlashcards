@@ -61,6 +61,11 @@ const StudyScreen = () => {
   const flip = useCallback(() => setFlipped((f) => !f), [])
 
   const rate = useCallback((got: boolean) => {
+    const wordId = queue[0]?.id
+    if (wordId != null) {
+      api.recordReview(wordId, got).catch(() => undefined)
+    }
+
     setReviewed((n) => n + 1)
 
     if (got) {
@@ -93,7 +98,7 @@ const StudyScreen = () => {
         return next
       })
     }, 65)
-  }, [])
+  }, [queue])
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
