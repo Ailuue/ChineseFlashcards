@@ -21,14 +21,21 @@ const DEFAULTS: Tweaks = {
   kbdHints: true,
 }
 
+const savedScript = localStorage.getItem('script')
+const initialScript: Tweaks['script'] = savedScript === 'traditional' ? 'traditional' : 'simplified'
+
 export const TweaksProvider = ({ children }: { children: ReactNode }) => {
-  const [tweaks, setTweaks] = useState<Tweaks>(DEFAULTS)
+  const [tweaks, setTweaks] = useState<Tweaks>({ ...DEFAULTS, script: initialScript })
 
   const value = useMemo<TweaksContextValue>(() => ({
     tweaks,
     updateTweaks: setTweaks,
     toggleTheme: () => setTweaks((t) => ({ ...t, theme: t.theme === 'dark' ? 'light' : 'dark' })),
-    toggleScript: () => setTweaks((t) => ({ ...t, script: t.script === 'simplified' ? 'traditional' : 'simplified' })),
+    toggleScript: () => setTweaks((t) => {
+      const next = t.script === 'simplified' ? 'traditional' : 'simplified'
+      localStorage.setItem('script', next)
+      return { ...t, script: next }
+    }),
   }), [tweaks])
 
   return <TweaksContext.Provider value={value}>{children}</TweaksContext.Provider>

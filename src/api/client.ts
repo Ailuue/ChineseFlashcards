@@ -57,6 +57,10 @@ export const api = {
 
   me: () => request<AuthUser>('/api/auth/me'),
 
+  session: (count: number) => request<{ words: Word[]; total: number }>(
+    `/api/progress/session?count=${count}`,
+  ),
+
   recordReview: (wordId: number, correct: boolean) => request<{ progress: unknown }>(
     `/api/progress/${wordId}/review`,
     { method: 'POST', body: JSON.stringify({ correct }) },

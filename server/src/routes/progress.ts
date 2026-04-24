@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, lte } from 'drizzle-orm'
+import { eq, and, lte, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks } from '../db/schema'
@@ -78,6 +78,69 @@ router.get('/due', async (req, res) => {
     .orderBy(userProgress.nextReview)
 
   res.json({ words: due, count: due.length })
+})
+
+const wordColumns = {
+  id: words.id,
+  simplified: words.simplified,
+  traditional: words.traditional,
+  pinyin: words.pinyin,
+  tones: words.tones,
+  meaning: words.meaning,
+  deck: decks.name,
+  deckId: words.deckId,
+}
+
+const SessionQuerySchema = z.object({
+  count: z.coerce.number().int().min(1).max(500).default(20),
+})
+
+// GET /api/progress/session — due + new words for a study session
+router.get('/session', async (req, res) => {
+  const parsed = SessionQuerySchema.safeParse(req.query)
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Invalid query parameters' })
+    return
+  }
+
+  const { count } = parsed.data
+  const { userId } = req.user!
+  const now = new Date()
+
+  const [dueWords, newWords] = await Promise.all([
+    // Words the user has seen and that are now due
+    db
+      .select(wordColumns)
+      .from(userProgress)
+      .innerJoin(words, eq(words.id, userProgress.wordId))
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(and(eq(userProgress.userId, userId), lte(userProgress.nextReview, now))),
+
+    // Words the user has never seen (no progress row)
+    db
+      .select(wordColumns)
+      .from(words)
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .leftJoin(
+        userProgress,
+        and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)),
+      )
+      .where(isNull(userProgress.id)),
+  ])
+
+  // Shuffle each group, then interleave: cap new words at remaining slots after due
+  const shuffle = <T>(arr: T[]): T[] => {
+    const a = [...arr]
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }
+
+  const pool = [...shuffle(dueWords), ...shuffle(newWords)].slice(0, count)
+
+  res.json({ words: pool, total: dueWords.length + newWords.length })
 })
 
 // POST /api/progress/:wordId/review — record a review result
