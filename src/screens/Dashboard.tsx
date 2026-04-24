@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { FlashCard } from '../types'
-import { HSK1 } from '../data'
 import { api } from '../api/client'
 import Icon from '../components/Icon'
 import Heatmap from '../components/Heatmap'
@@ -161,6 +160,7 @@ const Dashboard = () => {
   const [totalWords, setTotalWords] = useState(0)
   const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
   const [timeTodayMin, setTimeTodayMin] = useState(0)
+  const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
 
   useEffect(() => {
     api.activity().then(({ activity }) => {
@@ -170,13 +170,14 @@ const Dashboard = () => {
     }).catch(() => undefined)
 
     api.stats().then(({
-      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, timeTodaySeconds,
+      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, timeTodaySeconds, recentWords: rw,
     }) => {
       setStreak(s)
       setLearnedCount(l)
       setTotalWords(t)
       setTodayAccuracy(a)
       setTimeTodayMin(Math.round(timeTodaySeconds / 60))
+      setRecentWords(rw)
     }).catch(() => undefined)
   }, [])
 
@@ -279,11 +280,13 @@ const Dashboard = () => {
       </div>
 
       <div style={{ padding: '20px 28px' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>// last_reviewed</div>
+        <div className="sec-label" style={{ marginBottom: 14 }}>last reviewed</div>
         <div className="card">
-          {HSK1.slice(0, 5).map((c, i) => (
-            <RecentRow key={c.simplified} card={c} status={i % 3 === 1 ? 'wrong' : 'right'} />
-          ))}
+          {recentWords.length === 0
+            ? <div className="mono" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '14px 16px' }}>no reviews yet</div>
+            : recentWords.map((w) => (
+              <RecentRow key={`${w.simplified}-${w.deck}`} card={w} status={w.lastReviewCorrect ? 'right' : 'wrong'} />
+            ))}
         </div>
       </div>
     </div>

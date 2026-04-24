@@ -77,7 +77,15 @@ export const api = {
 
   activity: () => request<{ activity: Record<string, number> }>('/api/progress/activity'),
 
-  stats: () => request<{ streak: number; learnedCount: number; totalWords: number; todayAccuracy: number | null; todayTotal: number; timeTodaySeconds: number }>('/api/progress/stats'),
+  stats: () => request<{
+    streak: number;
+    learnedCount: number;
+    totalWords: number;
+    todayAccuracy: number | null;
+    todayTotal: number;
+    timeTodaySeconds: number;
+    recentWords: { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lastReviewCorrect: boolean | null }[];
+  }>('/api/progress/stats'),
 
   startSession: () => request<{ id: number }>('/api/sessions', { method: 'POST' }),
 

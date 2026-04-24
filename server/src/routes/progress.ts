@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, lte, isNull, isNotNull, gte, gt, count, sql } from 'drizzle-orm'
+import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks, studySessions } from '../db/schema'
@@ -73,7 +73,7 @@ router.get('/stats', async (req, res) => {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const [activeDays, learnedRow, totalRow, todayRows, timeRow] = await Promise.all([
+  const [activeDays, learnedRow, totalRow, todayRows, timeRow, recentWords] = await Promise.all([
     // All distinct days with at least one review
     db
       .selectDistinct({ day: sql<string>`TO_CHAR((${userProgress.lastReviewed})::date, 'YYYY-MM-DD')` })
@@ -106,6 +106,24 @@ router.get('/stats', async (req, res) => {
         isNotNull(studySessions.endedAt),
         gte(studySessions.startedAt, todayStart),
       )),
+
+    // 5 most recently reviewed words
+    db
+      .select({
+        simplified: words.simplified,
+        traditional: words.traditional,
+        pinyin: words.pinyin,
+        tones: words.tones,
+        meaning: words.meaning,
+        deck: decks.name,
+        lastReviewCorrect: userProgress.lastReviewCorrect,
+      })
+      .from(userProgress)
+      .innerJoin(words, eq(words.id, userProgress.wordId))
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(and(eq(userProgress.userId, userId), isNotNull(userProgress.lastReviewed)))
+      .orderBy(desc(userProgress.lastReviewed))
+      .limit(5),
   ])
 
   // Streak: walk backwards from today; if today has no review, start from yesterday
@@ -135,6 +153,7 @@ router.get('/stats', async (req, res) => {
     todayAccuracy,
     todayTotal,
     timeTodaySeconds: timeRow[0]?.totalSeconds ?? 0,
+    recentWords,
   })
 })
 
