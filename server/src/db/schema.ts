@@ -56,6 +56,7 @@ export const userProgress = pgTable('user_progress', {
   correct: integer('correct').default(0).notNull(),
   incorrect: integer('incorrect').default(0).notNull(),
   lastReviewed: timestamp('last_reviewed'),
+  lastReviewCorrect: boolean('last_review_correct'),
   nextReview: timestamp('next_review').defaultNow().notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),

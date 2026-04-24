@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, lte, isNull, isNotNull, gte, count, sql } from 'drizzle-orm'
+import { eq, and, lte, isNull, isNotNull, gte, gt, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks } from '../db/schema'
@@ -64,6 +64,65 @@ router.get('/activity', async (req, res) => {
   }
 
   res.json({ activity })
+})
+
+// GET /api/progress/stats — streak, words learned, total words
+router.get('/stats', async (req, res) => {
+  const { userId } = req.user!
+
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+
+  const [activeDays, learnedRow, totalRow, todayRows] = await Promise.all([
+    // All distinct days with at least one review
+    db
+      .selectDistinct({ day: sql<string>`TO_CHAR((${userProgress.lastReviewed})::date, 'YYYY-MM-DD')` })
+      .from(userProgress)
+      .where(and(eq(userProgress.userId, userId), isNotNull(userProgress.lastReviewed))),
+
+    // Words the user has gotten right at least once
+    db
+      .select({ learned: count() })
+      .from(userProgress)
+      .where(and(eq(userProgress.userId, userId), gt(userProgress.correct, 0))),
+
+    // Total words in the system
+    db.select({ total: count() }).from(words),
+
+    // Words reviewed today, with their last review outcome
+    db
+      .select({ lastReviewCorrect: userProgress.lastReviewCorrect })
+      .from(userProgress)
+      .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, todayStart))),
+  ])
+
+  // Streak: walk backwards from today; if today has no review, start from yesterday
+  const daySet = new Set(activeDays.map((r) => r.day))
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const toDateStr = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const cursor = new Date(today)
+  if (!daySet.has(toDateStr(cursor))) cursor.setDate(cursor.getDate() - 1)
+
+  let streak = 0
+  while (daySet.has(toDateStr(cursor))) {
+    streak += 1
+    cursor.setDate(cursor.getDate() - 1)
+  }
+
+  const todayCorrect = todayRows.filter((r) => r.lastReviewCorrect === true).length
+  const todayTotal = todayRows.length
+  const todayAccuracy = todayTotal > 0 ? Math.round((todayCorrect / todayTotal) * 100) : null
+
+  res.json({
+    streak,
+    learnedCount: learnedRow[0]?.learned ?? 0,
+    totalWords: totalRow[0]?.total ?? 0,
+    todayAccuracy,
+    todayTotal,
+  })
 })
 
 // GET /api/progress — all progress for the current user
@@ -216,6 +275,7 @@ router.post('/:wordId/review', async (req, res) => {
       correct: existing.correct + (correct ? 1 : 0),
       incorrect: existing.incorrect + (correct ? 0 : 1),
       lastReviewed: now,
+      lastReviewCorrect: correct,
       nextReview: schedule.nextReview,
       updatedAt: now,
     })

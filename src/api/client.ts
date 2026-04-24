@@ -77,6 +77,8 @@ export const api = {
 
   activity: () => request<{ activity: Record<string, number> }>('/api/progress/activity'),
 
+  stats: () => request<{ streak: number; learnedCount: number; totalWords: number; todayAccuracy: number | null; todayTotal: number }>('/api/progress/stats'),
+
   decks: () => request<{ decks: DeckInfo[] }>('/api/decks'),
 
   words: (params?: { limit?: number; deck?: string; q?: string }) => {

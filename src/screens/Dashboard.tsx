@@ -154,12 +154,23 @@ const Dashboard = () => {
   const [heatmapData, setHeatmapData] = useState<number[]>(new Array(WEEKS * 7).fill(0))
   const [totalReviews, setTotalReviews] = useState(0)
   const [activeDays, setActiveDays] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [learnedCount, setLearnedCount] = useState(0)
+  const [totalWords, setTotalWords] = useState(0)
+  const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
 
   useEffect(() => {
     api.activity().then(({ activity }) => {
       setHeatmapData(activityToHeatmapData(activity))
       setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
       setActiveDays(Object.keys(activity).length)
+    }).catch(() => undefined)
+
+    api.stats().then(({ streak: s, learnedCount: l, totalWords: t, todayAccuracy: a }) => {
+      setStreak(s)
+      setLearnedCount(l)
+      setTotalWords(t)
+      setTodayAccuracy(a)
     }).catch(() => undefined)
   }, [])
 
@@ -194,9 +205,9 @@ const Dashboard = () => {
     </div>
 
     <div className="dash-stats-grid">
-      <StatCell label="current streak" value="12" unit="days" accent icon="flame" sub="personal best: 18" />
-      <StatCell label="words learned" value="87" unit="/ 150" sub="+6 this week" />
-      <StatCell label="accuracy" value="84" unit="%" sub="↑ 2.1 pts" />
+      <StatCell label="current streak" value={String(streak)} unit="days" accent icon="flame" />
+      <StatCell label="words learned" value={String(learnedCount)} unit={`/ ${totalWords}`} />
+      <StatCell label="today's accuracy" value={todayAccuracy !== null ? String(todayAccuracy) : '—'} unit={todayAccuracy !== null ? '%' : ''} />
       <StatCell label="time today" value="0" unit="min" sub="goal · 10 min" />
     </div>
 
