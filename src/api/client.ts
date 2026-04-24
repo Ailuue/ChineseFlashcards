@@ -44,6 +44,15 @@ export interface WordsResponse {
   limit: number
 }
 
+export interface DeckInfo {
+  id: number
+  name: string
+  description: string | null
+  level: string | null
+  wordCount: number
+  learnedCount: number
+}
+
 export const api = {
   register: (username: string, password: string) => request<AuthResponse>('/api/auth/register', {
     method: 'POST',
@@ -65,6 +74,8 @@ export const api = {
     `/api/progress/${wordId}/review`,
     { method: 'POST', body: JSON.stringify({ correct }) },
   ),
+
+  decks: () => request<{ decks: DeckInfo[] }>('/api/decks'),
 
   words: (params?: { limit?: number; deck?: string; q?: string }) => {
     const qs = new URLSearchParams()

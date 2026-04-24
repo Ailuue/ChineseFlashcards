@@ -1,12 +1,16 @@
 import { Router } from 'express'
-import { eq, count } from 'drizzle-orm'
+import { eq, and, count, sql } from 'drizzle-orm'
 import { db } from '../db'
-import { decks, words } from '../db/schema'
+import { decks, words, userProgress } from '../db/schema'
+import { requireAuth } from '../middleware/auth'
 
 const router = Router()
+router.use(requireAuth)
 
 // GET /api/decks
-router.get('/', async (_req, res) => {
+router.get('/', async (req, res) => {
+  const { userId } = req.user!
+
   const rows = await db
     .select({
       id: decks.id,
@@ -15,10 +19,12 @@ router.get('/', async (_req, res) => {
       level: decks.level,
       isSystem: decks.isSystem,
       wordCount: count(words.id),
+      learnedCount: sql<number>`count(case when ${userProgress.correct} > 0 then 1 end)`.mapWith(Number),
       createdAt: decks.createdAt,
     })
     .from(decks)
     .leftJoin(words, eq(words.deckId, decks.id))
+    .leftJoin(userProgress, and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)))
     .groupBy(decks.id)
     .orderBy(decks.id)
 
