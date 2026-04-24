@@ -1,0 +1,42 @@
+const BASE = import.meta.env.VITE_API_URL ?? 'http://localhost:3001'
+
+async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = localStorage.getItem('token')
+  const res = await fetch(`${BASE}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...options.headers,
+    },
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error ?? 'Request failed')
+  return data as T
+}
+
+export interface AuthUser {
+  id: number
+  username: string
+}
+
+export interface AuthResponse {
+  user: AuthUser
+  token: string
+}
+
+export const api = {
+  register: (username: string, password: string) =>
+    request<AuthResponse>('/api/auth/register', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    }),
+
+  login: (username: string, password: string) =>
+    request<AuthResponse>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    }),
+
+  me: () => request<AuthUser>('/api/auth/me'),
+}

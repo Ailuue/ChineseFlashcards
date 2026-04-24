@@ -13,7 +13,6 @@ import { relations } from 'drizzle-orm'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
-  email: varchar('email', { length: 255 }).notNull().unique(),
   username: varchar('username', { length: 50 }).notNull().unique(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -86,6 +85,7 @@ export const userProgressRelations = relations(userProgress, ({ one }) => ({
 // Inferred types
 export type User = typeof users.$inferSelect
 export type NewUser = typeof users.$inferInsert
+export type PublicUser = Omit<User, 'passwordHash'>
 export type Deck = typeof decks.$inferSelect
 export type NewDeck = typeof decks.$inferInsert
 export type Word = typeof words.$inferSelect

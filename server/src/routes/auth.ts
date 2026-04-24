@@ -9,13 +9,12 @@ import { requireAuth, signToken } from '../middleware/auth'
 const router = Router()
 
 const RegisterSchema = z.object({
-  email: z.string().email(),
-  username: z.string().min(2).max(50).regex(/^[a-zA-Z0-9_-]+$/),
+  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'letters, numbers, underscore only'),
   password: z.string().min(8),
 })
 
 const LoginSchema = z.object({
-  email: z.string().email(),
+  username: z.string().min(1),
   password: z.string().min(1),
 })
 
@@ -27,23 +26,21 @@ router.post('/register', async (req, res) => {
     return
   }
 
-  const { email, username, password } = parsed.data
+  const { username, password } = parsed.data
 
-  const existing = await db.query.users.findFirst({
-    where: (u, { or }) => or(eq(u.email, email), eq(u.username, username)),
-  })
+  const existing = await db.query.users.findFirst({ where: eq(users.username, username) })
   if (existing) {
-    res.status(409).json({ error: 'Email or username already taken' })
+    res.status(409).json({ error: 'Username already taken' })
     return
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
   const [user] = await db
     .insert(users)
-    .values({ email, username, passwordHash })
-    .returning({ id: users.id, email: users.email, username: users.username })
+    .values({ username, passwordHash })
+    .returning({ id: users.id, username: users.username })
 
-  const token = signToken({ userId: user.id, email: user.email })
+  const token = signToken({ userId: user.id, username: user.username })
   res.status(201).json({ user, token })
 })
 
@@ -55,24 +52,21 @@ router.post('/login', async (req, res) => {
     return
   }
 
-  const { email, password } = parsed.data
-  const user = await db.query.users.findFirst({ where: eq(users.email, email) })
+  const { username, password } = parsed.data
+  const user = await db.query.users.findFirst({ where: eq(users.username, username) })
   if (!user) {
-    res.status(401).json({ error: 'Invalid email or password' })
+    res.status(401).json({ error: 'Invalid username or password' })
     return
   }
 
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
-    res.status(401).json({ error: 'Invalid email or password' })
+    res.status(401).json({ error: 'Invalid username or password' })
     return
   }
 
-  const token = signToken({ userId: user.id, email: user.email })
-  res.json({
-    user: { id: user.id, email: user.email, username: user.username },
-    token,
-  })
+  const token = signToken({ userId: user.id, username: user.username })
+  res.json({ user: { id: user.id, username: user.username }, token })
 })
 
 // GET /api/auth/me

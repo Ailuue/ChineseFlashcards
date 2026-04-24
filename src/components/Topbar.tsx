@@ -1,4 +1,6 @@
+import { useNavigate } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
+import { useAuth } from '../context/AuthContext'
 import Icon from './Icon'
 
 interface TopbarProps {
@@ -7,6 +9,17 @@ interface TopbarProps {
 
 const Topbar = ({ context = '' }: TopbarProps) => {
   const { tweaks, toggleTheme } = useTweaks()
+  const { user, isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleAuthClick = () => {
+    if (isAuthenticated) {
+      logout()
+    } else {
+      navigate('/login')
+    }
+  }
+
   return (
     <div className="topbar">
       <div className="cell logo">
@@ -31,7 +44,17 @@ const Topbar = ({ context = '' }: TopbarProps) => {
         <Icon name={tweaks.theme === 'dark' ? 'sun' : 'moon'} size={12} />
         <span>{tweaks.theme === 'dark' ? 'light' : 'dark'}</span>
       </div>
-      <div className="cell right muted topbar-desktop">@dev</div>
+      <div
+        className="cell right muted topbar-desktop"
+        style={{ cursor: 'pointer' }}
+        onClick={handleAuthClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => e.key === 'Enter' && handleAuthClick()}
+        title={isAuthenticated ? 'sign out' : 'sign in'}
+      >
+        {isAuthenticated ? `@${user!.username}` : 'sign in'}
+      </div>
     </div>
   )
 }
