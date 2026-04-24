@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, lte, isNull } from 'drizzle-orm'
+import { eq, and, lte, isNull, isNotNull, gte, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks } from '../db/schema'
@@ -35,6 +35,36 @@ function nextReviewSchedule(current: UserProgress, isCorrect: boolean) {
 
   return { easeFactor, intervalDays, repetitions, nextReview }
 }
+
+// GET /api/progress/activity — daily review counts for the last 53 weeks
+router.get('/activity', async (req, res) => {
+  const { userId } = req.user!
+  const yearAgo = new Date()
+  yearAgo.setDate(yearAgo.getDate() - 53 * 7)
+
+  const rows = await db
+    .select({
+      day: sql<string>`(${userProgress.lastReviewed})::date`,
+      reviews: count(),
+    })
+    .from(userProgress)
+    .where(
+      and(
+        eq(userProgress.userId, userId),
+        isNotNull(userProgress.lastReviewed),
+        gte(userProgress.lastReviewed, yearAgo),
+      ),
+    )
+    .groupBy(sql`(${userProgress.lastReviewed})::date`)
+    .orderBy(sql`(${userProgress.lastReviewed})::date`)
+
+  const activity: Record<string, number> = {}
+  for (const row of rows) {
+    activity[row.day] = row.reviews
+  }
+
+  res.json({ activity })
+})
 
 // GET /api/progress — all progress for the current user
 router.get('/', async (req, res) => {

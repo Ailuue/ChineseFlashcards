@@ -1,10 +1,31 @@
+import { useState, useEffect } from 'react'
 import { useTweaks } from '../context/TweaksContext'
 import type { FlashCard } from '../types'
-import { HSK1, HEATMAP_DATA } from '../data'
+import { HSK1 } from '../data'
+import { api } from '../api/client'
 import Icon from '../components/Icon'
 import Heatmap from '../components/Heatmap'
 import ProgressBar from '../components/ProgressBar'
 import Pinyin from '../components/Pinyin'
+
+const WEEKS = 53
+
+function activityToHeatmapData(activity: Record<string, number>): number[] {
+  const totalDays = WEEKS * 7
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const startDate = new Date(today)
+  startDate.setDate(startDate.getDate() - (totalDays - 1))
+
+  const data = new Array<number>(totalDays).fill(0)
+  for (const [dateStr, reviewCount] of Object.entries(activity)) {
+    const d = new Date(dateStr)
+    d.setHours(0, 0, 0, 0)
+    const offset = Math.round((d.getTime() - startDate.getTime()) / 86400000)
+    if (offset >= 0 && offset < totalDays) data[offset] = reviewCount
+  }
+  return data
+}
 
 interface StatCellProps {
   label: string;
@@ -129,7 +150,20 @@ const RecentRow = ({ card, status }: RecentRowProps) => {
   )
 }
 
-const Dashboard = () => (
+const Dashboard = () => {
+  const [heatmapData, setHeatmapData] = useState<number[]>(new Array(WEEKS * 7).fill(0))
+  const [totalReviews, setTotalReviews] = useState(0)
+  const [activeDays, setActiveDays] = useState(0)
+
+  useEffect(() => {
+    api.activity().then(({ activity }) => {
+      setHeatmapData(activityToHeatmapData(activity))
+      setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
+      setActiveDays(Object.keys(activity).length)
+    }).catch(() => undefined)
+  }, [])
+
+  return (
   <div style={{ flex: 1, overflowY: 'auto' }}>
     <div style={{
       padding: '28px 28px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-end', gap: 24,
@@ -174,15 +208,15 @@ const Dashboard = () => (
         >
           <div className="sec-label">// activity · last 12 months</div>
           <div className="mono" style={{ fontSize: 10, color: 'var(--fg-muted)' }}>
-            <span style={{ color: 'var(--fg)' }}>214</span>
+            <span style={{ color: 'var(--fg)' }}>{totalReviews}</span>
             {' '}
             reviews ·
-            <span style={{ color: 'var(--fg)' }}>89</span>
+            <span style={{ color: 'var(--fg)' }}>{activeDays}</span>
             {' '}
             days
           </div>
         </div>
-        <div className="heatmap-scroll"><Heatmap data={HEATMAP_DATA} /></div>
+        <div className="heatmap-scroll"><Heatmap data={heatmapData} /></div>
       </div>
 
       <div style={{ padding: '20px 28px' }}>
@@ -237,6 +271,7 @@ const Dashboard = () => (
       </div>
     </div>
   </div>
-)
+  )
+}
 
 export default Dashboard

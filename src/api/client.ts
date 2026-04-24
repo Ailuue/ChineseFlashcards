@@ -75,6 +75,8 @@ export const api = {
     { method: 'POST', body: JSON.stringify({ correct }) },
   ),
 
+  activity: () => request<{ activity: Record<string, number> }>('/api/progress/activity'),
+
   decks: () => request<{ decks: DeckInfo[] }>('/api/decks'),
 
   words: (params?: { limit?: number; deck?: string; q?: string }) => {
