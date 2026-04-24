@@ -9,7 +9,7 @@ const router = Router()
 const QuerySchema = z.object({
   deck: z.string().optional(),
   q: z.string().optional(),
-  limit: z.coerce.number().int().min(1).max(200).default(100),
+  limit: z.coerce.number().int().min(1).max(500).default(100),
   offset: z.coerce.number().int().min(0).default(0),
 })
 
@@ -48,6 +48,7 @@ router.get('/', async (req, res) => {
       .from(words)
       .innerJoin(decks, eq(words.deckId, decks.id))
       .where(whereClause)
+      .orderBy(words.id)
       .limit(limit)
       .offset(offset),
   ])

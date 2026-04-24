@@ -10,7 +10,9 @@ import SessionSummary from './SessionSummary'
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
   const location = useLocation()
-  const sessionCount = (location.state as { count?: number } | null)?.count ?? 20
+  const routeState = location.state as { count?: number; total?: number } | null
+  const sessionCount = routeState?.count ?? 20
+  const poolSize = routeState?.total ?? sessionCount
   const [loadedCards, setLoadedCards] = useState<SessionCard[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [queue, setQueue] = useState<SessionCard[]>([])
@@ -23,14 +25,19 @@ const StudyScreen = () => {
   const [done, setDone] = useState(false)
 
   useEffect(() => {
-    api.words({ limit: sessionCount })
+    api.words({ limit: poolSize })
       .then((res) => {
-        const cards = res.words.map((w) => ({ ...w, attempts: 0 }))
+        const pool = res.words
+        for (let i = pool.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [pool[i], pool[j]] = [pool[j], pool[i]]
+        }
+        const cards = pool.slice(0, sessionCount).map((w) => ({ ...w, attempts: 0 }))
         setLoadedCards(cards)
         setQueue(cards)
       })
       .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : 'Failed to load cards'))
-  }, [sessionCount])
+  }, [sessionCount, poolSize])
 
   const resetSession = useCallback(() => {
     if (!loadedCards) return

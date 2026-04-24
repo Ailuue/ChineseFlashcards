@@ -27,8 +27,8 @@ const StudySetupScreen = () => {
 
   const handleStart = useCallback(() => {
     if (!valid) return
-    navigate('/study/session', { state: { count: active } })
-  }, [valid, active, navigate])
+    navigate('/study/session', { state: { count: active, total: totalWords ?? active } })
+  }, [valid, active, navigate, totalWords])
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
