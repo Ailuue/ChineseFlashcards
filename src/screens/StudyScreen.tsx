@@ -1,16 +1,16 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useTweaks } from '../context/TweaksContext'
 import type { SessionCard } from '../types'
-import { SESSION_DECK } from '../data'
+import { api } from '../api/client'
 import Icon from '../components/Icon'
 import Pinyin from '../components/Pinyin'
 import SessionSummary from './SessionSummary'
 
-const makeQueue = (): SessionCard[] => SESSION_DECK.map((c, i) => ({ ...c, id: i, attempts: 0 }))
-
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
-  const [queue, setQueue] = useState<SessionCard[]>(makeQueue)
+  const [loadedCards, setLoadedCards] = useState<SessionCard[] | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [queue, setQueue] = useState<SessionCard[]>([])
   const [flipped, setFlipped] = useState(false)
   const [reviewed, setReviewed] = useState(0)
   const [correct, setCorrect] = useState(0)
@@ -19,8 +19,19 @@ const StudyScreen = () => {
   const [celebrate, setCelebrate] = useState<{ t: number } | null>(null)
   const [done, setDone] = useState(false)
 
+  useEffect(() => {
+    api.words({ limit: 20 })
+      .then((res) => {
+        const cards = res.words.map((w) => ({ ...w, attempts: 0 }))
+        setLoadedCards(cards)
+        setQueue(cards)
+      })
+      .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : 'Failed to load cards'))
+  }, [])
+
   const resetSession = useCallback(() => {
-    setQueue(makeQueue())
+    if (!loadedCards) return
+    setQueue(loadedCards.map((c) => ({ ...c, attempts: 0 })))
     setFlipped(false)
     setReviewed(0)
     setCorrect(0)
@@ -28,7 +39,7 @@ const StudyScreen = () => {
     setStreak(0)
     setCelebrate(null)
     setDone(false)
-  }, [])
+  }, [loadedCards])
 
   const flip = useCallback(() => setFlipped((f) => !f), [])
 
@@ -83,6 +94,34 @@ const StudyScreen = () => {
     return () => clearTimeout(t)
   }, [celebrate])
 
+  if (!loadedCards && !loadError) {
+    return (
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      >
+        <span className="mono" style={{ color: 'var(--fg-dim)', fontSize: 13, letterSpacing: '0.05em' }}>
+          loading cards…
+        </span>
+      </div>
+    )
+  }
+
+  if (loadError) {
+    return (
+      <div style={{
+        flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}
+      >
+        <span className="mono" style={{ color: 'var(--bad)', fontSize: 13 }}>
+          →
+          {' '}
+          {loadError}
+        </span>
+      </div>
+    )
+  }
+
   if (done) {
     return (
       <SessionSummary
@@ -96,7 +135,7 @@ const StudyScreen = () => {
   }
 
   const card = queue[0]
-  const total = SESSION_DECK.length
+  const total = loadedCards?.length ?? 0
   const position = total - queue.length + 1
   const hanFont = tweaks.serifHan ? 'var(--font-han)' : '"Noto Sans SC", "PingFang SC", sans-serif'
   const hanzi = card ? card[tweaks.script] : ''

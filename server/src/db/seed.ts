@@ -2,7 +2,7 @@ import 'dotenv/config'
 import { db } from './index'
 import { decks, words } from './schema'
 
-const HSK1_DECKS = [
+const HSK1_DECK = [
   { name: 'Greetings', description: 'Greetings, farewells, and polite expressions', level: 'HSK1' },
   { name: 'Pronouns', description: 'Personal pronouns and question words', level: 'HSK1' },
   { name: 'Numbers', description: 'Numbers, measure words, and quantities', level: 'HSK1' },
@@ -415,7 +415,7 @@ async function seed() {
   // Upsert decks
   const insertedDecks = await db
     .insert(decks)
-    .values(HSK1_DECKS)
+    .values(HSK1_DECK)
     .onConflictDoUpdate({ target: decks.name, set: { description: decks.description } })
     .returning({ id: decks.id, name: decks.name })
 
