@@ -1,4 +1,6 @@
-import { useState, useEffect, useCallback } from 'react'
+import {
+  useState, useEffect, useCallback, useRef,
+} from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { SessionCard } from '../types'
@@ -10,6 +12,17 @@ import SessionSummary from './SessionSummary'
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
   const location = useLocation()
+  const sessionIdRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    api.startSession().then(({ id }) => { sessionIdRef.current = id }).catch(() => undefined)
+    return () => {
+      if (sessionIdRef.current !== null) {
+        api.endSession(sessionIdRef.current).catch(() => undefined)
+        sessionIdRef.current = null
+      }
+    }
+  }, [])
   const state = location.state as { count?: number; deck?: string } | null
   const sessionCount = state?.count ?? 20
   const deckFilter = state?.deck ?? null

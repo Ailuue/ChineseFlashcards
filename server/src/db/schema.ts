@@ -64,9 +64,19 @@ export const userProgress = pgTable('user_progress', {
   uniqUserWord: unique().on(t.userId, t.wordId),
 }))
 
+export const studySessions = pgTable('study_sessions', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  startedAt: timestamp('started_at').defaultNow().notNull(),
+  endedAt: timestamp('ended_at'),
+})
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   progress: many(userProgress),
+  sessions: many(studySessions),
 }))
 
 export const decksRelations = relations(decks, ({ many }) => ({
@@ -81,6 +91,10 @@ export const wordsRelations = relations(words, ({ one, many }) => ({
 export const userProgressRelations = relations(userProgress, ({ one }) => ({
   user: one(users, { fields: [userProgress.userId], references: [users.id] }),
   word: one(words, { fields: [userProgress.wordId], references: [words.id] }),
+}))
+
+export const studySessionsRelations = relations(studySessions, ({ one }) => ({
+  user: one(users, { fields: [studySessions.userId], references: [users.id] }),
 }))
 
 // Inferred types

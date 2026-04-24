@@ -77,7 +77,11 @@ export const api = {
 
   activity: () => request<{ activity: Record<string, number> }>('/api/progress/activity'),
 
-  stats: () => request<{ streak: number; learnedCount: number; totalWords: number; todayAccuracy: number | null; todayTotal: number }>('/api/progress/stats'),
+  stats: () => request<{ streak: number; learnedCount: number; totalWords: number; todayAccuracy: number | null; todayTotal: number; timeTodaySeconds: number }>('/api/progress/stats'),
+
+  startSession: () => request<{ id: number }>('/api/sessions', { method: 'POST' }),
+
+  endSession: (id: number) => request<{ ok: boolean }>(`/api/sessions/${id}/end`, { method: 'PATCH', keepalive: true }),
 
   decks: () => request<{ decks: DeckInfo[] }>('/api/decks'),
 

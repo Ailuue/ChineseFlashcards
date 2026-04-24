@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, and, lte, isNull, isNotNull, gte, gt, count, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
-import { userProgress, words, decks } from '../db/schema'
+import { userProgress, words, decks, studySessions } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { UserProgress } from '../db/schema'
 
@@ -73,7 +73,7 @@ router.get('/stats', async (req, res) => {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const [activeDays, learnedRow, totalRow, todayRows] = await Promise.all([
+  const [activeDays, learnedRow, totalRow, todayRows, timeRow] = await Promise.all([
     // All distinct days with at least one review
     db
       .selectDistinct({ day: sql<string>`TO_CHAR((${userProgress.lastReviewed})::date, 'YYYY-MM-DD')` })
@@ -94,6 +94,18 @@ router.get('/stats', async (req, res) => {
       .select({ lastReviewCorrect: userProgress.lastReviewCorrect })
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, todayStart))),
+
+    // Total seconds spent in completed study sessions today
+    db
+      .select({
+        totalSeconds: sql<number>`COALESCE(SUM(EXTRACT(EPOCH FROM (${studySessions.endedAt} - ${studySessions.startedAt}))), 0)`.mapWith(Number),
+      })
+      .from(studySessions)
+      .where(and(
+        eq(studySessions.userId, userId),
+        isNotNull(studySessions.endedAt),
+        gte(studySessions.startedAt, todayStart),
+      )),
   ])
 
   // Streak: walk backwards from today; if today has no review, start from yesterday
@@ -122,6 +134,7 @@ router.get('/stats', async (req, res) => {
     totalWords: totalRow[0]?.total ?? 0,
     todayAccuracy,
     todayTotal,
+    timeTodaySeconds: timeRow[0]?.totalSeconds ?? 0,
   })
 })
 

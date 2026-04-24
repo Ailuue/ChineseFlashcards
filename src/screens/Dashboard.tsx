@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { FlashCard } from '../types'
 import { HSK1 } from '../data'
@@ -151,6 +152,7 @@ const RecentRow = ({ card, status }: RecentRowProps) => {
 }
 
 const Dashboard = () => {
+  const navigate = useNavigate()
   const [heatmapData, setHeatmapData] = useState<number[]>(new Array(WEEKS * 7).fill(0))
   const [totalReviews, setTotalReviews] = useState(0)
   const [activeDays, setActiveDays] = useState(0)
@@ -158,6 +160,7 @@ const Dashboard = () => {
   const [learnedCount, setLearnedCount] = useState(0)
   const [totalWords, setTotalWords] = useState(0)
   const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
+  const [timeTodayMin, setTimeTodayMin] = useState(0)
 
   useEffect(() => {
     api.activity().then(({ activity }) => {
@@ -166,11 +169,14 @@ const Dashboard = () => {
       setActiveDays(Object.keys(activity).length)
     }).catch(() => undefined)
 
-    api.stats().then(({ streak: s, learnedCount: l, totalWords: t, todayAccuracy: a }) => {
+    api.stats().then(({
+      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, timeTodaySeconds,
+    }) => {
       setStreak(s)
       setLearnedCount(l)
       setTotalWords(t)
       setTodayAccuracy(a)
+      setTimeTodayMin(Math.round(timeTodaySeconds / 60))
     }).catch(() => undefined)
   }, [])
 
@@ -196,7 +202,7 @@ const Dashboard = () => {
           ~6 min session · 3 decks · last review 14 hours ago
         </div>
       </div>
-      <button type="button" className="btn primary" style={{ padding: '14px 20px' }}>
+      <button type="button" className="btn primary" style={{ padding: '14px 20px' }} onClick={() => navigate('/study')}>
         <Icon name="play" size={12} />
         {' '}
         start session
@@ -208,7 +214,7 @@ const Dashboard = () => {
       <StatCell label="current streak" value={String(streak)} unit="days" accent icon="flame" />
       <StatCell label="words learned" value={String(learnedCount)} unit={`/ ${totalWords}`} />
       <StatCell label="today's accuracy" value={todayAccuracy !== null ? String(todayAccuracy) : '—'} unit={todayAccuracy !== null ? '%' : ''} />
-      <StatCell label="time today" value="0" unit="min" sub="goal · 10 min" />
+      <StatCell label="time today" value={String(timeTodayMin)} unit="min" />
     </div>
 
     <div className="dash-main-grid">
