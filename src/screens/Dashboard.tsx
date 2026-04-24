@@ -1,10 +1,10 @@
-import { useTweaks } from '../context/TweaksContext';
-import type { FlashCard } from '../types';
-import { HSK1, HEATMAP_DATA } from '../data';
-import Icon from '../components/Icon';
-import Heatmap from '../components/Heatmap';
-import ProgressBar from '../components/ProgressBar';
-import Pinyin from '../components/Pinyin';
+import { useTweaks } from '../context/TweaksContext'
+import type { FlashCard } from '../types'
+import { HSK1, HEATMAP_DATA } from '../data'
+import Icon from '../components/Icon'
+import Heatmap from '../components/Heatmap'
+import ProgressBar from '../components/ProgressBar'
+import Pinyin from '../components/Pinyin'
 
 interface StatCellProps {
   label: string;
@@ -42,7 +42,7 @@ const StatCell = ({
     </div>
     {sub && <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', marginTop: 6 }}>{sub}</div>}
   </div>
-);
+)
 
 interface DueItemProps {
   deck: string;
@@ -67,7 +67,7 @@ const DueItem = ({
       <Icon name="arrow" size={12} />
     </div>
   </div>
-);
+)
 
 interface GoalRowProps {
   label: string;
@@ -79,7 +79,7 @@ interface GoalRowProps {
 const GoalRow = ({
   label, value, max, unit = '',
 }: GoalRowProps) => {
-  const pct = Math.min(1, value / max);
+  const pct = Math.min(1, value / max)
   return (
     <div>
       <div style={{
@@ -99,8 +99,8 @@ const GoalRow = ({
       </div>
       <ProgressBar value={pct} />
     </div>
-  );
-};
+  )
+}
 
 interface RecentRowProps {
   card: FlashCard;
@@ -108,7 +108,7 @@ interface RecentRowProps {
 }
 
 const RecentRow = ({ card, status }: RecentRowProps) => {
-  const { tweaks } = useTweaks();
+  const { tweaks } = useTweaks()
   return (
     <div className="row">
       <div className="han" style={{ fontSize: 22, color: 'var(--fg)', minWidth: 44 }}>{card[tweaks.script]}</div>
@@ -126,8 +126,8 @@ const RecentRow = ({ card, status }: RecentRowProps) => {
         {status === 'right' ? '✓' : '✕'}
       </span>
     </div>
-  );
-};
+  )
+}
 
 const Dashboard = () => (
   <div style={{ flex: 1, overflowY: 'auto' }}>
@@ -237,6 +237,6 @@ const Dashboard = () => (
       </div>
     </div>
   </div>
-);
+)
 
-export default Dashboard;
+export default Dashboard

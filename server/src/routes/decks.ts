@@ -1,9 +1,9 @@
-import { Router } from 'express';
-import { eq, count } from 'drizzle-orm';
-import { db } from '../db';
-import { decks, words } from '../db/schema';
+import { Router } from 'express'
+import { eq, count } from 'drizzle-orm'
+import { db } from '../db'
+import { decks, words } from '../db/schema'
 
-const router = Router();
+const router = Router()
 
 // GET /api/decks
 router.get('/', async (_req, res) => {
@@ -20,30 +20,30 @@ router.get('/', async (_req, res) => {
     .from(decks)
     .leftJoin(words, eq(words.deckId, decks.id))
     .groupBy(decks.id)
-    .orderBy(decks.id);
+    .orderBy(decks.id)
 
-  res.json({ decks: rows });
-});
+  res.json({ decks: rows })
+})
 
 // GET /api/decks/:id
 router.get('/:id', async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id, 10)
   if (Number.isNaN(id)) {
-    res.status(400).json({ error: 'Invalid deck id' });
-    return;
+    res.status(400).json({ error: 'Invalid deck id' })
+    return
   }
 
   const deck = await db.query.decks.findFirst({
     where: eq(decks.id, id),
     with: { words: true },
-  });
+  })
 
   if (!deck) {
-    res.status(404).json({ error: 'Deck not found' });
-    return;
+    res.status(404).json({ error: 'Deck not found' })
+    return
   }
 
-  res.json(deck);
-});
+  res.json(deck)
+})
 
-export default router;
+export default router

@@ -1,10 +1,10 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { TweaksProvider } from './context/TweaksContext';
-import Layout from './components/Layout';
-import Dashboard from './screens/Dashboard';
-import StudyScreen from './screens/StudyScreen';
-import DeckBrowser from './screens/DeckBrowser';
-import StatsScreen from './screens/StatsScreen';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { TweaksProvider } from './context/TweaksContext'
+import Layout from './components/Layout'
+import Dashboard from './screens/Dashboard'
+import StudyScreen from './screens/StudyScreen'
+import DeckBrowser from './screens/DeckBrowser'
+import StatsScreen from './screens/StatsScreen'
 
 const App = () => (
   <TweaksProvider>
@@ -19,6 +19,6 @@ const App = () => (
       </Routes>
     </BrowserRouter>
   </TweaksProvider>
-);
+)
 
-export default App;
+export default App

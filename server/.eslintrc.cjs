@@ -18,6 +18,8 @@ module.exports = {
     },
   },
   rules: {
+    semi: 'off',
+    '@typescript-eslint/semi': ['error', 'never'],
     'import/no-extraneous-dependencies': ['error', { packageDir: [__dirname] }],
     'import/prefer-default-export': 'off',
     // Server logs are intentional — no-console is a browser-only concern

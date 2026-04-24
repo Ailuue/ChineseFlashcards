@@ -1,6 +1,6 @@
-import 'dotenv/config';
-import { db } from './index';
-import { decks, words } from './schema';
+import 'dotenv/config'
+import { db } from './index'
+import { decks, words } from './schema'
 
 const HSK1_DECKS = [
   { name: 'Greetings', description: 'Common greetings and farewells', level: 'HSK1' },
@@ -13,7 +13,7 @@ const HSK1_DECKS = [
   { name: 'Adjectives', description: 'Describing words', level: 'HSK1' },
   { name: 'Places', description: 'Locations and places', level: 'HSK1' },
   { name: 'School', description: 'Education vocabulary', level: 'HSK1' },
-];
+]
 
 const HSK1_WORDS = [
   // Greetings
@@ -56,19 +56,19 @@ const HSK1_WORDS = [
   // School
   { simplified: '书', traditional: '書', pinyin: 'shū', tones: [1], meaning: 'book', deck: 'School' },
   { simplified: '学校', traditional: '學校', pinyin: 'xué xiào', tones: [2, 4], meaning: 'school', deck: 'School' },
-];
+]
 
 async function seed() {
-  console.log('Seeding database…');
+  console.log('Seeding database…')
 
   // Upsert decks
   const insertedDecks = await db
     .insert(decks)
     .values(HSK1_DECKS)
     .onConflictDoUpdate({ target: decks.name, set: { description: decks.description } })
-    .returning({ id: decks.id, name: decks.name });
+    .returning({ id: decks.id, name: decks.name })
 
-  const deckMap = Object.fromEntries(insertedDecks.map((d) => [d.name, d.id]));
+  const deckMap = Object.fromEntries(insertedDecks.map((d) => [d.name, d.id]))
 
   // Upsert words
   const wordRows = HSK1_WORDS.map((w) => ({
@@ -78,17 +78,17 @@ async function seed() {
     tones: w.tones,
     meaning: w.meaning,
     deckId: deckMap[w.deck],
-  }));
+  }))
 
   await db
     .insert(words)
     .values(wordRows)
-    .onConflictDoNothing();
+    .onConflictDoNothing()
 
-  console.log(`Seeded ${insertedDecks.length} decks and ${wordRows.length} words.`);
+  console.log(`Seeded ${insertedDecks.length} decks and ${wordRows.length} words.`)
 }
 
 seed().catch((err) => {
-  console.error('Seed failed:', err);
-  process.exit(1);
-});
+  console.error('Seed failed:', err)
+  process.exit(1)
+})

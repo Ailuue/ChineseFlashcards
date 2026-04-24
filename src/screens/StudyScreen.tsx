@@ -1,87 +1,87 @@
-import { useState, useEffect, useCallback } from 'react';
-import { useTweaks } from '../context/TweaksContext';
-import type { SessionCard } from '../types';
-import { SESSION_DECK } from '../data';
-import Icon from '../components/Icon';
-import Pinyin from '../components/Pinyin';
-import SessionSummary from './SessionSummary';
+import { useState, useEffect, useCallback } from 'react'
+import { useTweaks } from '../context/TweaksContext'
+import type { SessionCard } from '../types'
+import { SESSION_DECK } from '../data'
+import Icon from '../components/Icon'
+import Pinyin from '../components/Pinyin'
+import SessionSummary from './SessionSummary'
 
-const makeQueue = (): SessionCard[] => SESSION_DECK.map((c, i) => ({ ...c, id: i, attempts: 0 }));
+const makeQueue = (): SessionCard[] => SESSION_DECK.map((c, i) => ({ ...c, id: i, attempts: 0 }))
 
 const StudyScreen = () => {
-  const { tweaks, toggleScript } = useTweaks();
-  const [queue, setQueue] = useState<SessionCard[]>(makeQueue);
-  const [flipped, setFlipped] = useState(false);
-  const [reviewed, setReviewed] = useState(0);
-  const [correct, setCorrect] = useState(0);
-  const [wrong, setWrong] = useState(0);
-  const [streak, setStreak] = useState(0);
-  const [celebrate, setCelebrate] = useState<{ t: number } | null>(null);
-  const [done, setDone] = useState(false);
+  const { tweaks, toggleScript } = useTweaks()
+  const [queue, setQueue] = useState<SessionCard[]>(makeQueue)
+  const [flipped, setFlipped] = useState(false)
+  const [reviewed, setReviewed] = useState(0)
+  const [correct, setCorrect] = useState(0)
+  const [wrong, setWrong] = useState(0)
+  const [streak, setStreak] = useState(0)
+  const [celebrate, setCelebrate] = useState<{ t: number } | null>(null)
+  const [done, setDone] = useState(false)
 
   const resetSession = useCallback(() => {
-    setQueue(makeQueue());
-    setFlipped(false);
-    setReviewed(0);
-    setCorrect(0);
-    setWrong(0);
-    setStreak(0);
-    setCelebrate(null);
-    setDone(false);
-  }, []);
+    setQueue(makeQueue())
+    setFlipped(false)
+    setReviewed(0)
+    setCorrect(0)
+    setWrong(0)
+    setStreak(0)
+    setCelebrate(null)
+    setDone(false)
+  }, [])
 
-  const flip = useCallback(() => setFlipped((f) => !f), []);
+  const flip = useCallback(() => setFlipped((f) => !f), [])
 
   const rate = useCallback((got: boolean) => {
-    setReviewed((n) => n + 1);
+    setReviewed((n) => n + 1)
 
     if (got) {
-      setCorrect((n) => n + 1);
-      setStreak((s) => { if (s + 1 >= 3) setCelebrate({ t: Date.now() }); return s + 1; });
+      setCorrect((n) => n + 1)
+      setStreak((s) => { if (s + 1 >= 3) setCelebrate({ t: Date.now() }); return s + 1 })
     } else {
-      setWrong((n) => n + 1);
-      setStreak(0);
+      setWrong((n) => n + 1)
+      setStreak(0)
     }
 
     // Start flip back to front immediately
-    setFlipped(false);
+    setFlipped(false)
 
     // Swap card content at the midpoint of the flip (~65 ms), just as the card
     // passes through 90° where backface-visibility: hidden makes both faces
     // invisible — so the new card's front emerges cleanly from behind the turn.
     setTimeout(() => {
       setQueue((prev) => {
-        const next = prev.slice();
-        const card = next[0];
+        const next = prev.slice()
+        const card = next[0]
         if (!got) {
-          const updated = { ...card, attempts: card.attempts + 1 };
-          next.splice(0, 1);
-          next.splice(Math.min(2, next.length), 0, updated);
+          const updated = { ...card, attempts: card.attempts + 1 }
+          next.splice(0, 1)
+          next.splice(Math.min(2, next.length), 0, updated)
         } else {
-          next.splice(0, 1);
+          next.splice(0, 1)
         }
         // Wait for the remainder of the flip animation before showing the summary
-        if (next.length === 0) setTimeout(() => setDone(true), 500);
-        return next;
-      });
-    }, 65);
-  }, []);
+        if (next.length === 0) setTimeout(() => setDone(true), 500)
+        return next
+      })
+    }, 65)
+  }, [])
 
   useEffect(() => {
     const k = (e: KeyboardEvent) => {
-      if (done) return;
-      if (e.key === ' ') { e.preventDefault(); flip(); } else if (e.key === '1' && flipped) rate(false);
-      else if (e.key === '2' && flipped) rate(true);
-    };
-    window.addEventListener('keydown', k);
-    return () => window.removeEventListener('keydown', k);
-  }, [done, flipped, flip, rate]);
+      if (done) return
+      if (e.key === ' ') { e.preventDefault(); flip() } else if (e.key === '1' && flipped) rate(false)
+      else if (e.key === '2' && flipped) rate(true)
+    }
+    window.addEventListener('keydown', k)
+    return () => window.removeEventListener('keydown', k)
+  }, [done, flipped, flip, rate])
 
   useEffect(() => {
-    if (!celebrate) return undefined;
-    const t = setTimeout(() => setCelebrate(null), 900);
-    return () => clearTimeout(t);
-  }, [celebrate]);
+    if (!celebrate) return undefined
+    const t = setTimeout(() => setCelebrate(null), 900)
+    return () => clearTimeout(t)
+  }, [celebrate])
 
   if (done) {
     return (
@@ -92,14 +92,14 @@ const StudyScreen = () => {
         streak={streak}
         onReset={resetSession}
       />
-    );
+    )
   }
 
-  const card = queue[0];
-  const total = SESSION_DECK.length;
-  const position = total - queue.length + 1;
-  const hanFont = tweaks.serifHan ? 'var(--font-han)' : '"Noto Sans SC", "PingFang SC", sans-serif';
-  const hanzi = card ? card[tweaks.script] : '';
+  const card = queue[0]
+  const total = SESSION_DECK.length
+  const position = total - queue.length + 1
+  const hanFont = tweaks.serifHan ? 'var(--font-han)' : '"Noto Sans SC", "PingFang SC", sans-serif'
+  const hanzi = card ? card[tweaks.script] : ''
 
   return (
     <div style={{
@@ -274,12 +274,12 @@ const StudyScreen = () => {
                   </div>
                 </div>
                 <div className="rate-in-card">
-                  <button type="button" className="rate wrong" onClick={(e) => { e.stopPropagation(); rate(false); }} style={{ border: 'none', borderRight: '1px solid var(--border)', background: 'transparent' }}>
+                  <button type="button" className="rate wrong" onClick={(e) => { e.stopPropagation(); rate(false) }} style={{ border: 'none', borderRight: '1px solid var(--border)', background: 'transparent' }}>
                     <span className="glyph"><Icon name="x" size={16} stroke={2} /></span>
                     <span>Got it Wrong</span>
                     {tweaks.kbdHints && <span className="sub">press 1</span>}
                   </button>
-                  <button type="button" className="rate right" onClick={(e) => { e.stopPropagation(); rate(true); }} style={{ border: 'none', background: 'transparent' }}>
+                  <button type="button" className="rate right" onClick={(e) => { e.stopPropagation(); rate(true) }} style={{ border: 'none', background: 'transparent' }}>
                     <span className="glyph"><Icon name="check" size={16} stroke={2} /></span>
                     <span>Got it Right</span>
                     {tweaks.kbdHints && <span className="sub">press 2</span>}
@@ -290,7 +290,7 @@ const StudyScreen = () => {
           </div>
 
           {celebrate && Array.from({ length: 6 }).map((_, i) => {
-            const angle = (i / 6) * Math.PI * 2;
+            const angle = (i / 6) * Math.PI * 2
             return (
               <div
                 key={`${i}-${celebrate.t}`}
@@ -304,7 +304,7 @@ const StudyScreen = () => {
               >
                 +
               </div>
-            );
+            )
           })}
         </div>
 
@@ -353,7 +353,7 @@ const StudyScreen = () => {
         <span>srs: wrong cards reappear in 2 turns</span>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default StudyScreen;
+export default StudyScreen

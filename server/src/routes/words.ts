@@ -1,31 +1,31 @@
-import { Router } from 'express';
-import { eq, ilike } from 'drizzle-orm';
-import { z } from 'zod';
-import { db } from '../db';
-import { words, decks } from '../db/schema';
+import { Router } from 'express'
+import { eq, ilike } from 'drizzle-orm'
+import { z } from 'zod'
+import { db } from '../db'
+import { words, decks } from '../db/schema'
 
-const router = Router();
+const router = Router()
 
 const QuerySchema = z.object({
   deck: z.string().optional(),
   q: z.string().optional(),
   limit: z.coerce.number().int().min(1).max(200).default(100),
   offset: z.coerce.number().int().min(0).default(0),
-});
+})
 
 // GET /api/words
 router.get('/', async (req, res) => {
-  const parsed = QuerySchema.safeParse(req.query);
+  const parsed = QuerySchema.safeParse(req.query)
   if (!parsed.success) {
-    res.status(400).json({ error: 'Invalid query parameters' });
-    return;
+    res.status(400).json({ error: 'Invalid query parameters' })
+    return
   }
 
-  const { deck, q, limit, offset } = parsed.data;
+  const { deck, q, limit, offset } = parsed.data
 
-  let whereClause;
-  if (deck) whereClause = eq(decks.name, deck);
-  else if (q) whereClause = ilike(words.simplified, `%${q}%`);
+  let whereClause
+  if (deck) whereClause = eq(decks.name, deck)
+  else if (q) whereClause = ilike(words.simplified, `%${q}%`)
 
   const rows = await db
     .select({
@@ -42,30 +42,30 @@ router.get('/', async (req, res) => {
     .innerJoin(decks, eq(words.deckId, decks.id))
     .where(whereClause)
     .limit(limit)
-    .offset(offset);
+    .offset(offset)
 
-  res.json({ words: rows, count: rows.length, offset, limit });
-});
+  res.json({ words: rows, count: rows.length, offset, limit })
+})
 
 // GET /api/words/:id
 router.get('/:id', async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const id = parseInt(req.params.id, 10)
   if (Number.isNaN(id)) {
-    res.status(400).json({ error: 'Invalid word id' });
-    return;
+    res.status(400).json({ error: 'Invalid word id' })
+    return
   }
 
   const word = await db.query.words.findFirst({
     where: eq(words.id, id),
     with: { deck: true },
-  });
+  })
 
   if (!word) {
-    res.status(404).json({ error: 'Word not found' });
-    return;
+    res.status(404).json({ error: 'Word not found' })
+    return
   }
 
-  res.json(word);
-});
+  res.json(word)
+})
 
-export default router;
+export default router

@@ -1,6 +1,6 @@
-import type { DeckSummary } from '../types';
-import { DECKS } from '../data';
-import Icon from '../components/Icon';
+import type { DeckSummary } from '../types'
+import { DECKS } from '../data'
+import Icon from '../components/Icon'
 
 interface DeckCardProps {
   deck: DeckSummary;
@@ -8,8 +8,8 @@ interface DeckCardProps {
 }
 
 const DeckCard = ({ deck, index }: DeckCardProps) => {
-  const done = deck.progress === 1;
-  const learnedBg = done ? 'var(--ok)' : 'var(--fg)';
+  const done = deck.progress === 1
+  const learnedBg = done ? 'var(--ok)' : 'var(--fg)'
   return (
     <div className="card" style={{ position: 'relative', cursor: 'pointer', transition: 'border-color .12s' }}>
       <div className="card-header">
@@ -73,8 +73,8 @@ const DeckCard = ({ deck, index }: DeckCardProps) => {
         </span>
       </div>
     </div>
-  );
-};
+  )
+}
 
 const DeckBrowser = () => (
   <div style={{
@@ -160,6 +160,6 @@ const DeckBrowser = () => (
       </div>
     </div>
   </div>
-);
+)
 
-export default DeckBrowser;
+export default DeckBrowser

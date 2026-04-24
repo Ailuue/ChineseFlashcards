@@ -19,6 +19,8 @@ module.exports = {
     },
   },
   rules: {
+    semi: 'off',
+    '@typescript-eslint/semi': ['error', 'never'],
     // Point the import plugin at the root package.json so it resolves dependencies correctly
     'import/no-extraneous-dependencies': ['error', { packageDir: [__dirname] }],
     // Airbnb bans default export in some cases; keep defaults for page-level components

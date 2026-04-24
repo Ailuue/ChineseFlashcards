@@ -1,7 +1,7 @@
 import {
   createContext, useContext, useState, useMemo, ReactNode,
-} from 'react';
-import type { Tweaks } from '../types';
+} from 'react'
+import type { Tweaks } from '../types'
 
 interface TweaksContextValue {
   tweaks: Tweaks;
@@ -10,7 +10,7 @@ interface TweaksContextValue {
   toggleScript: () => void;
 }
 
-const TweaksContext = createContext<TweaksContextValue | null>(null);
+const TweaksContext = createContext<TweaksContextValue | null>(null)
 
 const DEFAULTS: Tweaks = {
   theme: 'dark',
@@ -19,23 +19,23 @@ const DEFAULTS: Tweaks = {
   toneColor: true,
   serifHan: true,
   kbdHints: true,
-};
+}
 
 export const TweaksProvider = ({ children }: { children: ReactNode }) => {
-  const [tweaks, setTweaks] = useState<Tweaks>(DEFAULTS);
+  const [tweaks, setTweaks] = useState<Tweaks>(DEFAULTS)
 
   const value = useMemo<TweaksContextValue>(() => ({
     tweaks,
     updateTweaks: setTweaks,
     toggleTheme: () => setTweaks((t) => ({ ...t, theme: t.theme === 'dark' ? 'light' : 'dark' })),
     toggleScript: () => setTweaks((t) => ({ ...t, script: t.script === 'simplified' ? 'traditional' : 'simplified' })),
-  }), [tweaks]);
+  }), [tweaks])
 
-  return <TweaksContext.Provider value={value}>{children}</TweaksContext.Provider>;
-};
+  return <TweaksContext.Provider value={value}>{children}</TweaksContext.Provider>
+}
 
 export const useTweaks = (): TweaksContextValue => {
-  const ctx = useContext(TweaksContext);
-  if (!ctx) throw new Error('useTweaks must be used within TweaksProvider');
-  return ctx;
-};
+  const ctx = useContext(TweaksContext)
+  if (!ctx) throw new Error('useTweaks must be used within TweaksProvider')
+  return ctx
+}

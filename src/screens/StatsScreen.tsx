@@ -1,7 +1,7 @@
-import { useTweaks } from '../context/TweaksContext';
-import { HSK1, HEATMAP_DATA } from '../data';
-import Heatmap from '../components/Heatmap';
-import Pinyin from '../components/Pinyin';
+import { useTweaks } from '../context/TweaksContext'
+import { HSK1, HEATMAP_DATA } from '../data'
+import Heatmap from '../components/Heatmap'
+import Pinyin from '../components/Pinyin'
 
 interface KPIProps {
   label: string;
@@ -22,37 +22,37 @@ const KPI = ({
       {delta}
     </div>
   </div>
-);
+)
 
 const LINE_PTS = [
   68, 70, 72, 69, 74, 76, 73, 78, 77, 80,
   79, 82, 81, 83, 80, 85, 83, 86, 84, 87,
   85, 88, 86, 90, 88, 89, 86, 90, 88, 91,
-];
-const W = 560; const H = 160; const PAD = 16;
+]
+const W = 560; const H = 160; const PAD = 16
 
 const LineChart = () => {
-  const xs = LINE_PTS.map((_, i) => PAD + (i * (W - PAD * 2)) / (LINE_PTS.length - 1));
-  const ys = LINE_PTS.map((v) => H - PAD - ((v - 60) / 40) * (H - PAD * 2));
-  const d = xs.map((x, i) => `${i ? 'L' : 'M'} ${x} ${ys[i]}`).join(' ');
-  const area = `${d} L ${xs[xs.length - 1]} ${H - PAD} L ${xs[0]} ${H - PAD} Z`;
+  const xs = LINE_PTS.map((_, i) => PAD + (i * (W - PAD * 2)) / (LINE_PTS.length - 1))
+  const ys = LINE_PTS.map((v) => H - PAD - ((v - 60) / 40) * (H - PAD * 2))
+  const d = xs.map((x, i) => `${i ? 'L' : 'M'} ${x} ${ys[i]}`).join(' ')
+  const area = `${d} L ${xs[xs.length - 1]} ${H - PAD} L ${xs[0]} ${H - PAD} Z`
   return (
     <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
       {[60, 70, 80, 90, 100].map((y) => {
-        const yy = H - PAD - ((y - 60) / 40) * (H - PAD * 2);
+        const yy = H - PAD - ((y - 60) / 40) * (H - PAD * 2)
         return (
           <g key={y}>
             <line x1={PAD} x2={W - PAD} y1={yy} y2={yy} stroke="var(--border)" strokeDasharray="2 3" />
             <text x={W - PAD + 4} y={yy + 3} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)">{y}</text>
           </g>
-        );
+        )
       })}
       <path d={area} fill="var(--fg)" opacity="0.08" />
       <path d={d} stroke="var(--fg)" strokeWidth="1.5" fill="none" />
       {xs.map((x, i) => <circle key={i} cx={x} cy={ys[i]} r={i === LINE_PTS.length - 1 ? 3 : 1.6} fill="var(--accent)" />)}
     </svg>
-  );
-};
+  )
+}
 
 interface ToneRowProps { tone: number; label: string; acc: number; }
 const ToneRow = ({ tone, label, acc }: ToneRowProps) => (
@@ -82,17 +82,17 @@ const ToneRow = ({ tone, label, acc }: ToneRowProps) => (
       %
     </span>
   </div>
-);
+)
 
 const STRUGGLES = [
   { c: HSK1[11], lapse: 0.62 },
   { c: HSK1[14], lapse: 0.50 },
   { c: HSK1[18], lapse: 0.45 },
   { c: HSK1[21], lapse: 0.40 },
-];
+]
 
 const StatsScreen = () => {
-  const { tweaks } = useTweaks();
+  const { tweaks } = useTweaks()
   return (
     <div style={{
       flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20,
@@ -179,7 +179,7 @@ const StatsScreen = () => {
         ))}
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default StatsScreen;
+export default StatsScreen

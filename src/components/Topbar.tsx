@@ -1,12 +1,12 @@
-import { useTweaks } from '../context/TweaksContext';
-import Icon from './Icon';
+import { useTweaks } from '../context/TweaksContext'
+import Icon from './Icon'
 
 interface TopbarProps {
   context?: string;
 }
 
 const Topbar = ({ context = '' }: TopbarProps) => {
-  const { tweaks, toggleTheme } = useTweaks();
+  const { tweaks, toggleTheme } = useTweaks()
   return (
     <div className="topbar">
       <div className="cell logo">
@@ -33,7 +33,7 @@ const Topbar = ({ context = '' }: TopbarProps) => {
       </div>
       <div className="cell right muted topbar-desktop">@dev</div>
     </div>
-  );
-};
+  )
+}
 
-export default Topbar;
+export default Topbar

@@ -5,7 +5,7 @@ interface PinyinProps {
 }
 
 const Pinyin = ({ pinyin, tones, size = 20 }: PinyinProps) => {
-  const syllables = pinyin.split(' ');
+  const syllables = pinyin.split(' ')
   return (
     <span style={{
       fontFamily: 'var(--font-sans)', fontSize: size, letterSpacing: '0.02em', fontWeight: 500,
@@ -19,7 +19,7 @@ const Pinyin = ({ pinyin, tones, size = 20 }: PinyinProps) => {
         </span>
       ))}
     </span>
-  );
-};
+  )
+}
 
-export default Pinyin;
+export default Pinyin

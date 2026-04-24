@@ -1,6 +1,6 @@
-import Icon from '../components/Icon';
+import Icon from '../components/Icon'
 
-const TIMELINE_HEIGHTS = [3, 5, 2, 6, 4, 7, 3, 5, 8, 4, 6, 3, 5, 7, 4, 6, 5, 3, 5, 4];
+const TIMELINE_HEIGHTS = [3, 5, 2, 6, 4, 7, 3, 5, 8, 4, 6, 3, 5, 7, 4, 6, 5, 3, 5, 4]
 
 interface StatTileProps {
   label: string;
@@ -12,8 +12,8 @@ interface StatTileProps {
 const StatTile = ({
   label, value, accent = undefined, icon = '',
 }: StatTileProps) => {
-  const accentBad = accent === 'bad' ? 'var(--bad)' : 'var(--fg)';
-  const color = accent === 'ok' ? 'var(--ok)' : accentBad;
+  const accentBad = accent === 'bad' ? 'var(--bad)' : 'var(--fg)'
+  const color = accent === 'ok' ? 'var(--ok)' : accentBad
   return (
     <div style={{
       border: '1px solid var(--border)', padding: '10px 12px', borderRadius: 2, background: 'var(--bg)',
@@ -35,8 +35,8 @@ const StatTile = ({
         {value}
       </div>
     </div>
-  );
-};
+  )
+}
 
 interface SessionSummaryProps {
   reviewed: number;
@@ -49,7 +49,7 @@ interface SessionSummaryProps {
 const SessionSummary = ({
   reviewed, correct, wrong, streak, onReset,
 }: SessionSummaryProps) => {
-  const acc = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0;
+  const acc = reviewed > 0 ? Math.round((correct / reviewed) * 100) : 0
   return (
     <div className="summary-outer">
       <div className="summary-container">
@@ -128,7 +128,7 @@ const SessionSummary = ({
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default SessionSummary;
+export default SessionSummary

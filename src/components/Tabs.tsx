@@ -1,5 +1,5 @@
-import { NavLink } from 'react-router-dom';
-import Icon from './Icon';
+import { NavLink } from 'react-router-dom'
+import Icon from './Icon'
 
 interface TabDef {
   to: string;
@@ -22,7 +22,7 @@ const TAB_LIST: TabDef[] = [
   {
     to: '/stats', label: 'Stats', num: '04', icon: 'chart',
   },
-];
+]
 
 const Tabs = () => (
   <div className="tabs">
@@ -40,6 +40,6 @@ const Tabs = () => (
     ))}
     <div className="tab spacer" />
   </div>
-);
+)
 
-export default Tabs;
+export default Tabs

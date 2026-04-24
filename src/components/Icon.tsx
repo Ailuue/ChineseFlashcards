@@ -83,11 +83,11 @@ const PATHS: Record<string, JSX.Element> = {
       <rect x="9" y="3" width="3" height="10" />
     </>
   ),
-};
+}
 
 const Icon = ({ name, size = 14, stroke = 1.6 }: IconProps) => {
-  const path = PATHS[name];
-  if (!path) return null;
+  const path = PATHS[name]
+  if (!path) return null
   return (
     <svg
       width={size}
@@ -102,7 +102,7 @@ const Icon = ({ name, size = 14, stroke = 1.6 }: IconProps) => {
     >
       {path}
     </svg>
-  );
-};
+  )
+}
 
-export default Icon;
+export default Icon

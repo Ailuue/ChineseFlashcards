@@ -8,8 +8,8 @@ import {
   timestamp,
   boolean,
   unique,
-} from 'drizzle-orm/pg-core';
-import { relations } from 'drizzle-orm';
+} from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -18,7 +18,7 @@ export const users = pgTable('users', {
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
-});
+})
 
 export const decks = pgTable('decks', {
   id: serial('id').primaryKey(),
@@ -27,7 +27,7 @@ export const decks = pgTable('decks', {
   level: varchar('level', { length: 20 }), // HSK1, HSK2, custom, etc.
   isSystem: boolean('is_system').default(true).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+})
 
 export const words = pgTable('words', {
   id: serial('id').primaryKey(),
@@ -40,7 +40,7 @@ export const words = pgTable('words', {
     .references(() => decks.id, { onDelete: 'cascade' })
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
+})
 
 // SM-2 spaced repetition data per user per word
 export const userProgress = pgTable('user_progress', {
@@ -62,33 +62,33 @@ export const userProgress = pgTable('user_progress', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 }, (t) => ({
   uniqUserWord: unique().on(t.userId, t.wordId),
-}));
+}))
 
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   progress: many(userProgress),
-}));
+}))
 
 export const decksRelations = relations(decks, ({ many }) => ({
   words: many(words),
-}));
+}))
 
 export const wordsRelations = relations(words, ({ one, many }) => ({
   deck: one(decks, { fields: [words.deckId], references: [decks.id] }),
   progress: many(userProgress),
-}));
+}))
 
 export const userProgressRelations = relations(userProgress, ({ one }) => ({
   user: one(users, { fields: [userProgress.userId], references: [users.id] }),
   word: one(words, { fields: [userProgress.wordId], references: [words.id] }),
-}));
+}))
 
 // Inferred types
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-export type Deck = typeof decks.$inferSelect;
-export type NewDeck = typeof decks.$inferInsert;
-export type Word = typeof words.$inferSelect;
-export type NewWord = typeof words.$inferInsert;
-export type UserProgress = typeof userProgress.$inferSelect;
-export type NewUserProgress = typeof userProgress.$inferInsert;
+export type User = typeof users.$inferSelect
+export type NewUser = typeof users.$inferInsert
+export type Deck = typeof decks.$inferSelect
+export type NewDeck = typeof decks.$inferInsert
+export type Word = typeof words.$inferSelect
+export type NewWord = typeof words.$inferInsert
+export type UserProgress = typeof userProgress.$inferSelect
+export type NewUserProgress = typeof userProgress.$inferInsert

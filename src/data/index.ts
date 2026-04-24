@@ -1,4 +1,4 @@
-import type { FlashCard, DeckSummary } from '../types';
+import type { FlashCard, DeckSummary } from '../types'
 
 export const HSK1: FlashCard[] = [
   {
@@ -91,30 +91,30 @@ export const HSK1: FlashCard[] = [
   {
     simplified: '好', traditional: '好', pinyin: 'hǎo', tones: [3], meaning: 'good', deck: 'Adjectives',
   },
-];
+]
 
-export const SESSION_DECK: FlashCard[] = HSK1.slice(0, 20);
+export const SESSION_DECK: FlashCard[] = HSK1.slice(0, 20)
 
 const generateHeatmap = (): number[] => {
-  const out: number[] = [];
-  let s = 1337;
-  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
-  const total = 53 * 7;
-  const startWeeks = 18;
+  const out: number[] = []
+  let s = 1337
+  const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280 }
+  const total = 53 * 7
+  const startWeeks = 18
   for (let i = 0; i < total; i += 1) {
-    const week = Math.floor(i / 7);
-    if (week < startWeeks) { out.push(0); continue; } // eslint-disable-line no-continue
-    const ramp = Math.min(1, (week - startWeeks) / 8);
-    const r = rnd();
-    if (r < 0.18 * (1 - ramp * 0.5)) out.push(0);
-    else if (r < 0.45) out.push(Math.max(1, Math.floor(ramp * 2 + rnd() * 2)));
-    else if (r < 0.78) out.push(Math.max(1, Math.floor(ramp * 3 + rnd() * 2)));
-    else out.push(Math.max(2, Math.floor(2 + ramp * 2 + rnd() * 2)));
+    const week = Math.floor(i / 7)
+    if (week < startWeeks) { out.push(0); continue } // eslint-disable-line no-continue
+    const ramp = Math.min(1, (week - startWeeks) / 8)
+    const r = rnd()
+    if (r < 0.18 * (1 - ramp * 0.5)) out.push(0)
+    else if (r < 0.45) out.push(Math.max(1, Math.floor(ramp * 2 + rnd() * 2)))
+    else if (r < 0.78) out.push(Math.max(1, Math.floor(ramp * 3 + rnd() * 2)))
+    else out.push(Math.max(2, Math.floor(2 + ramp * 2 + rnd() * 2)))
   }
-  return out;
-};
+  return out
+}
 
-export const HEATMAP_DATA: number[] = generateHeatmap();
+export const HEATMAP_DATA: number[] = generateHeatmap()
 
 export const DECKS: DeckSummary[] = [
   {
@@ -147,4 +147,4 @@ export const DECKS: DeckSummary[] = [
   {
     name: 'Questions', total: 8, learned: 0, due: 0, progress: 0,
   },
-];
+]
