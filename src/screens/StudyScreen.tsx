@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { useLocation } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { SessionCard } from '../types'
 import { api } from '../api/client'
@@ -8,6 +9,8 @@ import SessionSummary from './SessionSummary'
 
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
+  const location = useLocation()
+  const sessionCount = (location.state as { count?: number } | null)?.count ?? 20
   const [loadedCards, setLoadedCards] = useState<SessionCard[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [queue, setQueue] = useState<SessionCard[]>([])
@@ -20,14 +23,14 @@ const StudyScreen = () => {
   const [done, setDone] = useState(false)
 
   useEffect(() => {
-    api.words({ limit: 20 })
+    api.words({ limit: sessionCount })
       .then((res) => {
         const cards = res.words.map((w) => ({ ...w, attempts: 0 }))
         setLoadedCards(cards)
         setQueue(cards)
       })
       .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : 'Failed to load cards'))
-  }, [])
+  }, [sessionCount])
 
   const resetSession = useCallback(() => {
     if (!loadedCards) return

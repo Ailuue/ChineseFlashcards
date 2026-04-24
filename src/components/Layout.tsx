@@ -7,6 +7,7 @@ import Tabs from './Tabs'
 const CONTEXT_LABELS: Record<string, string> = {
   '/': 'user · dashboard',
   '/study': 'deck · daily mix',
+  '/study/session': 'study · session',
   '/decks': 'decks',
   '/stats': 'stats',
 }

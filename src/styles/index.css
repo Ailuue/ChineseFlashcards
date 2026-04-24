@@ -639,6 +639,10 @@ body.theme-dark {
   .rate-in-card { display: flex; }
   .study-footer { display: flex; }
 
+  /* Study setup */
+  .preset-grid { grid-template-columns: repeat(4, 1fr); }
+  .setup-shortcuts { display: block; }
+
   /* Dashboard */
   .dash-stats-grid { grid-template-columns: repeat(4, 1fr); }
   .dash-main-grid { display: grid; grid-template-columns: 1.45fr 1fr; }
@@ -653,6 +657,15 @@ body.theme-dark {
   .summary-outer { align-items: center; padding: 40px; }
   .summary-stats-card { flex-direction: row; align-items: center; gap: 20px; padding: 24px; }
 }
+
+/* ── Study setup ──────────────────────────────────────────── */
+.preset-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.setup-shortcuts { display: none; }
 
 /* ── Auth screens ─────────────────────────────────────────── */
 .auth-topbar {

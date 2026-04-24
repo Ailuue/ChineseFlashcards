@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, ilike } from 'drizzle-orm'
+import { eq, ilike, count } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { words, decks } from '../db/schema'
@@ -27,24 +27,38 @@ router.get('/', async (req, res) => {
   if (deck) whereClause = eq(decks.name, deck)
   else if (q) whereClause = ilike(words.simplified, `%${q}%`)
 
-  const rows = await db
-    .select({
-      id: words.id,
-      simplified: words.simplified,
-      traditional: words.traditional,
-      pinyin: words.pinyin,
-      tones: words.tones,
-      meaning: words.meaning,
-      deck: decks.name,
-      deckId: words.deckId,
-    })
-    .from(words)
-    .innerJoin(decks, eq(words.deckId, decks.id))
-    .where(whereClause)
-    .limit(limit)
-    .offset(offset)
+  const [countResult, rows] = await Promise.all([
+    db
+      .select({ total: count() })
+      .from(words)
+      .innerJoin(decks, eq(words.deckId, decks.id))
+      .where(whereClause)
+      .then((r) => r[0]),
+    db
+      .select({
+        id: words.id,
+        simplified: words.simplified,
+        traditional: words.traditional,
+        pinyin: words.pinyin,
+        tones: words.tones,
+        meaning: words.meaning,
+        deck: decks.name,
+        deckId: words.deckId,
+      })
+      .from(words)
+      .innerJoin(decks, eq(words.deckId, decks.id))
+      .where(whereClause)
+      .limit(limit)
+      .offset(offset),
+  ])
 
-  res.json({ words: rows, count: rows.length, offset, limit })
+  res.json({
+    words: rows,
+    count: rows.length,
+    total: countResult?.total ?? 0,
+    offset,
+    limit,
+  })
 })
 
 // GET /api/words/:id

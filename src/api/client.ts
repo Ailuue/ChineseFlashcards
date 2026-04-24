@@ -39,6 +39,7 @@ export interface Word {
 export interface WordsResponse {
   words: Word[]
   count: number
+  total: number
   offset: number
   limit: number
 }
