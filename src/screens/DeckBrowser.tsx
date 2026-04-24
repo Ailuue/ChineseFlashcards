@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { api, type DeckInfo } from '../api/client'
 import Icon from '../components/Icon'
 
@@ -8,12 +9,13 @@ interface DeckCardProps {
 }
 
 const DeckCard = ({ deck, index }: DeckCardProps) => {
+  const navigate = useNavigate()
   const { wordCount, learnedCount } = deck
   const progress = wordCount > 0 ? learnedCount / wordCount : 0
   const done = progress === 1
   const learnedBg = done ? 'var(--ok)' : 'var(--fg)'
   return (
-    <div className="card" style={{ position: 'relative', cursor: 'pointer', transition: 'border-color .12s' }}>
+    <div className="card" role="button" tabIndex={0} onClick={() => navigate('/study/session', { state: { deck: deck.name } })} onKeyDown={(e) => e.key === 'Enter' && navigate('/study/session', { state: { deck: deck.name } })} style={{ position: 'relative', cursor: 'pointer', transition: 'border-color .12s' }}>
       <div className="card-header">
         <span>
           deck_
