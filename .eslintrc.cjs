@@ -40,5 +40,7 @@ module.exports = {
     'react/no-array-index-key': 'off',
     // The // prefix is an intentional design label style throughout this app, not accidental JS comments
     'react/jsx-no-comment-textnodes': 'off',
+    // autoFocus is intentional on first form field for keyboard UX
+    'jsx-a11y/no-autofocus': 'off',
   },
 };

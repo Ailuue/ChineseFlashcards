@@ -3,6 +3,7 @@ import {
   useContext,
   useState,
   useCallback,
+  useMemo,
   type ReactNode,
 } from 'react'
 import { api, type AuthUser } from '../api/client'
@@ -29,7 +30,7 @@ function loadInitialState(): { user: AuthUser | null; token: string | null } {
   }
 }
 
-export function AuthProvider({ children }: { children: ReactNode }) {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const initial = loadInitialState()
   const [user, setUser] = useState<AuthUser | null>(initial.user)
   const [token, setToken] = useState<string | null>(initial.token)
@@ -64,16 +65,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setToken(null)
   }, [])
 
+  const value = useMemo(
+    () => ({
+      user, token, isAuthenticated: !!user, login, register, logout,
+    }),
+    [user, token, login, register, logout],
+  )
+
   return (
-    <AuthContext.Provider
-      value={{ user, token, isAuthenticated: !!user, login, register, logout }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export function useAuth() {
+export const useAuth = () => {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')
   return ctx

@@ -26,17 +26,15 @@ export interface AuthResponse {
 }
 
 export const api = {
-  register: (username: string, password: string) =>
-    request<AuthResponse>('/api/auth/register', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    }),
+  register: (username: string, password: string) => request<AuthResponse>('/api/auth/register', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  }),
 
-  login: (username: string, password: string) =>
-    request<AuthResponse>('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ username, password }),
-    }),
+  login: (username: string, password: string) => request<AuthResponse>('/api/auth/login', {
+    method: 'POST',
+    body: JSON.stringify({ username, password }),
+  }),
 
   me: () => request<AuthUser>('/api/auth/me'),
 }

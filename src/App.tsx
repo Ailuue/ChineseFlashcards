@@ -1,4 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import {
+  BrowserRouter, Routes, Route, Navigate,
+} from 'react-router-dom'
 import { TweaksProvider } from './context/TweaksContext'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import Layout from './components/Layout'
@@ -9,9 +11,10 @@ import StatsScreen from './screens/StatsScreen'
 import LoginScreen from './screens/LoginScreen'
 import RegisterScreen from './screens/RegisterScreen'
 
-function RequireAuth({ children }: { children: React.ReactNode }) {
+const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth()
-  return isAuthenticated ? <>{children}</> : <Navigate to="/login" replace />
+  if (!isAuthenticated) return <Navigate to="/login" replace />
+  return children as React.ReactElement
 }
 
 const App = () => (
