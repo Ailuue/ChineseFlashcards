@@ -1,7 +1,5 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useTweaks } from '../context/TweaksContext'
-import { HEATMAP_DATA, HSK1 } from '../data'
-import Heatmap from '../components/Heatmap'
 import Pinyin from '../components/Pinyin'
 import { api } from '../api/client'
 
@@ -17,37 +15,65 @@ const KPI = ({ label, value }: KPIProps) => (
   </div>
 )
 
-const LINE_PTS = [
-  68, 70, 72, 69, 74, 76, 73, 78, 77, 80,
-  79, 82, 81, 83, 80, 85, 83, 86, 84, 87,
-  85, 88, 86, 90, 88, 89, 86, 90, 88, 91,
-]
-const W = 560; const H = 160; const PAD = 16
+const LPAD = 30; const RPAD = 10; const TPAD = 8; const BPAD = 20
 
-const LineChart = () => {
-  const xs = LINE_PTS.map((_, i) => PAD + (i * (W - PAD * 2)) / (LINE_PTS.length - 1))
-  const ys = LINE_PTS.map((v) => H - PAD - ((v - 60) / 40) * (H - PAD * 2))
-  const d = xs.map((x, i) => `${i ? 'L' : 'M'} ${x} ${ys[i]}`).join(' ')
-  const area = `${d} L ${xs[xs.length - 1]} ${H - PAD} L ${xs[0]} ${H - PAD} Z`
+const AccuracyChart = ({ points }: { points: number[] }) => {
+  const svgRef = useRef<SVGSVGElement>(null)
+  const [size, setSize] = useState({ w: 560, h: 160 })
+
+  useEffect(() => {
+    const el = svgRef.current
+    if (!el) return
+    const obs = new ResizeObserver(() => {
+      setSize({ w: Math.round(el.clientWidth), h: Math.round(el.clientHeight) })
+    })
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [])
+
+  const { w, h } = size
+  const chartW = w - LPAD - RPAD
+  const chartH = h - TPAD - BPAD
+  const n = points.length
+
+  const xOf = (i: number) => LPAD + (n <= 1 ? 0 : (i / (n - 1)) * chartW)
+  const yOf = (v: number) => TPAD + (1 - v / 100) * chartH
+
+  const pathD = points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xOf(i)} ${yOf(v)}`).join(' ')
+  const areaD = n > 0
+    ? `${pathD} L ${xOf(n - 1)} ${TPAD + chartH} L ${xOf(0)} ${TPAD + chartH} Z`
+    : ''
+
   return (
-    <svg width="100%" height="100%" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ display: 'block' }}>
-      {[60, 70, 80, 90, 100].map((y) => {
-        const yy = H - PAD - ((y - 60) / 40) * (H - PAD * 2)
+    <svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${w} ${h}`} style={{ display: 'block' }}>
+      {[0, 20, 40, 60, 80, 100].map((y) => {
+        const yy = yOf(y)
         return (
           <g key={y}>
-            <line x1={PAD} x2={W - PAD} y1={yy} y2={yy} stroke="var(--border)" strokeDasharray="2 3" />
-            <text x={W - PAD + 4} y={yy + 3} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)">{y}</text>
+            <text x={LPAD - 5} y={yy + 3} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="end">{y}</text>
+            <line x1={LPAD} x2={w - RPAD} y1={yy} y2={yy} stroke="var(--border)" strokeDasharray="2 3" />
           </g>
         )
       })}
-      <path d={area} fill="var(--fg)" opacity="0.08" />
-      <path d={d} stroke="var(--fg)" strokeWidth="1.5" fill="none" />
-      {xs.map((x, i) => <circle key={i} cx={x} cy={ys[i]} r={i === LINE_PTS.length - 1 ? 3 : 1.6} fill="var(--accent)" />)}
+      {n === 0 && (
+        <text x={w / 2} y={h / 2 + 3} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">no data yet</text>
+      )}
+      {n > 0 && <path d={areaD} fill="var(--fg)" opacity="0.08" />}
+      {n > 0 && <path d={pathD} stroke="var(--fg)" strokeWidth="1.5" fill="none" />}
+      {points.map((v, i) => (
+        <circle key={i} cx={xOf(i)} cy={yOf(v)} r={i === n - 1 ? 3 : 1.6} fill="var(--accent)" />
+      ))}
+      {[1, 5, 10, 15, 20, 25, 30].filter((day) => day <= n).map((day) => (
+        <text key={day} x={xOf(day - 1)} y={h - 4} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">{day}</text>
+      ))}
+      {n > 0 && n !== 1 && ![1, 5, 10, 15, 20, 25, 30].includes(n) && (
+        <text x={xOf(n - 1)} y={h - 4} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">{n}</text>
+      )}
     </svg>
   )
 }
 
-interface ToneRowProps { tone: number; label: string; acc: number; }
+interface ToneRowProps { tone: number; label: string; acc: number | null; }
 const ToneRow = ({ tone, label, acc }: ToneRowProps) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
     <span
@@ -62,27 +88,20 @@ const ToneRow = ({ tone, label, acc }: ToneRowProps) => (
     <div style={{ flex: 1 }}>
       <div style={{ fontSize: 11.5, color: 'var(--fg-muted)', marginBottom: 4 }}>{label}</div>
       <div className="progress" style={{ height: 6 }}>
-        <div className="fill" style={{ width: `${acc}%`, background: `var(--tone${tone})` }} />
+        <div className="fill" style={{ width: acc !== null ? `${acc}%` : '0%', background: `var(--tone${tone})` }} />
       </div>
     </div>
     <span
       className="mono"
       style={{
-        fontSize: 11.5, fontVariantNumeric: 'tabular-nums', color: 'var(--fg)', width: 34, textAlign: 'right',
+        fontSize: 11.5, fontVariantNumeric: 'tabular-nums', color: acc !== null ? 'var(--fg)' : 'var(--fg-dim)', width: 34, textAlign: 'right',
       }}
     >
-      {acc}
-      %
+      {acc !== null ? `${acc}%` : '—'}
     </span>
   </div>
 )
 
-const STRUGGLES = [
-  { c: HSK1[11], lapse: 0.62 },
-  { c: HSK1[14], lapse: 0.50 },
-  { c: HSK1[18], lapse: 0.45 },
-  { c: HSK1[21], lapse: 0.40 },
-]
 
 function fmtMinutes(seconds: number): string {
   const m = Math.floor(seconds / 60)
@@ -94,10 +113,15 @@ function fmtMinutes(seconds: number): string {
 
 const StatsScreen = () => {
   const { tweaks } = useTweaks()
+  type Struggle = { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lapseRate: number }
+
   const [reviews, setReviews] = useState<number | null>(null)
   const [accuracy, setAccuracy] = useState<number | null>(null)
   const [wordsLearned, setWordsLearned] = useState<number | null>(null)
   const [avgSessionSeconds, setAvgSessionSeconds] = useState<number | null>(null)
+  const [trendPoints, setTrendPoints] = useState<number[]>([])
+  const [struggles, setStruggles] = useState<Struggle[]>([])
+  const [toneAcc, setToneAcc] = useState<Record<number, number>>({})
 
   useEffect(() => {
     api.stats30().then(({
@@ -108,6 +132,10 @@ const StatsScreen = () => {
       setWordsLearned(w)
       setAvgSessionSeconds(s)
     }).catch(() => undefined)
+
+    api.accuracyTrend().then(({ points }) => setTrendPoints(points)).catch(() => undefined)
+    api.topStruggles().then(({ struggles: s }) => setStruggles(s)).catch(() => undefined)
+    api.toneAccuracy().then(({ byTone }) => setToneAcc(byTone)).catch(() => undefined)
   }, [])
 
   return (
@@ -122,7 +150,7 @@ const StatsScreen = () => {
 
       <div className="kpi-grid">
         <KPI label="reviews" value={reviews !== null ? String(reviews) : '—'} />
-        <KPI label="accuracy" value={accuracy !== null ? `${accuracy}%` : '—'} />
+        <KPI label="avg accuracy" value={accuracy !== null ? `${accuracy}%` : '—'} />
         <KPI label="words learned" value={wordsLearned !== null ? String(wordsLearned) : '—'} />
         <KPI label="avg session" value={avgSessionSeconds !== null ? fmtMinutes(avgSessionSeconds) : '—'} />
       </div>
@@ -130,70 +158,65 @@ const StatsScreen = () => {
       <div className="stats-charts-grid">
         <div className="card stats-line-chart">
           <div className="card-header">
-            <span>// accuracy_trend · 30d</span>
-            <span className="mono" style={{ fontSize: 10 }}>y · %</span>
+            <span>accuracy trend</span>
           </div>
-          <div style={{ padding: 18, height: 200 }}><LineChart /></div>
+          <div style={{ padding: 18, height: 200 }}>
+            <AccuracyChart points={trendPoints.length > 0 ? trendPoints : (accuracy !== null ? [accuracy] : [])} />
+          </div>
         </div>
         <div className="card">
           <div className="card-header">
-            <span>// accuracy_by_tone</span>
+            <span>accuracy by tone</span>
           </div>
           <div style={{
             padding: 18, display: 'flex', flexDirection: 'column', gap: 12,
           }}
           >
-            <ToneRow tone={1} label="1st · high flat" acc={88} />
-            <ToneRow tone={2} label="2nd · rising" acc={79} />
-            <ToneRow tone={3} label="3rd · dipping" acc={68} />
-            <ToneRow tone={4} label="4th · falling" acc={91} />
-            <ToneRow tone={5} label="neutral" acc={86} />
+            <ToneRow tone={1} label="1st · high flat" acc={toneAcc[1] ?? null} />
+            <ToneRow tone={2} label="2nd · rising" acc={toneAcc[2] ?? null} />
+            <ToneRow tone={3} label="3rd · dipping" acc={toneAcc[3] ?? null} />
+            <ToneRow tone={4} label="4th · falling" acc={toneAcc[4] ?? null} />
+            <ToneRow tone={5} label="neutral" acc={toneAcc[5] ?? null} />
           </div>
         </div>
       </div>
 
       <div className="card">
         <div className="card-header">
-          <span>// contributions · 52w</span>
-          <span className="mono" style={{ fontSize: 10 }}>214 reviews · 89 active days · longest streak 18d</span>
-        </div>
-        <div style={{ padding: 18 }}><div className="heatmap-scroll"><Heatmap data={HEATMAP_DATA} /></div></div>
-      </div>
-
-      <div className="card">
-        <div className="card-header">
-          <span>// top_struggles · sorted by lapse rate</span>
+          <span>top struggles</span>
           <span className="mono" style={{ fontSize: 10 }}>
-            {STRUGGLES.length}
+            {struggles.length}
             {' '}
-            items
+            {struggles.length === 1 ? 'item' : 'items'}
           </span>
         </div>
-        {STRUGGLES.map((r, i) => (
-          <div className="row" key={r.c.simplified}>
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', width: 24 }}>{String(i + 1).padStart(2, '0')}</span>
-            <div className="han" style={{ fontSize: 24, minWidth: 52 }}>{r.c[tweaks.script]}</div>
-            <div style={{ flex: 1 }}>
-              {tweaks.toneColor
-                ? <Pinyin pinyin={r.c.pinyin} tones={r.c.tones} size={13} />
-                : <span style={{ fontSize: 13 }}>{r.c.pinyin}</span>}
-              <span style={{ fontSize: 11.5, color: 'var(--fg-muted)', marginLeft: 10 }}>{r.c.meaning}</span>
+        {struggles.length === 0
+          ? <div className="mono" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '14px 16px' }}>no struggle data yet</div>
+          : struggles.map((r, i) => (
+            <div className="row" key={`${r.simplified}-${r.deck}`}>
+              <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', width: 24 }}>{String(i + 1).padStart(2, '0')}</span>
+              <div className="han" style={{ fontSize: 24, minWidth: 52 }}>{tweaks.script === 'traditional' ? r.traditional : r.simplified}</div>
+              <div style={{ flex: 1 }}>
+                {tweaks.toneColor
+                  ? <Pinyin pinyin={r.pinyin} tones={r.tones} size={13} />
+                  : <span style={{ fontSize: 13 }}>{r.pinyin}</span>}
+                <span style={{ fontSize: 11.5, color: 'var(--fg-muted)', marginLeft: 10 }}>{r.meaning}</span>
+              </div>
+              <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', width: 70 }}>{r.deck}</span>
+              <div style={{ width: 100 }}>
+                <div className="progress"><div className="fill" style={{ width: `${r.lapseRate * 100}%`, background: 'var(--bad)' }} /></div>
+              </div>
+              <span
+                className="mono"
+                style={{
+                  fontSize: 11, color: 'var(--bad)', width: 42, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
+                }}
+              >
+                {Math.round(r.lapseRate * 100)}
+                %
+              </span>
             </div>
-            <span className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', width: 70 }}>{r.c.deck}</span>
-            <div style={{ width: 100 }}>
-              <div className="progress"><div className="fill" style={{ width: `${r.lapse * 100}%`, background: 'var(--bad)' }} /></div>
-            </div>
-            <span
-              className="mono"
-              style={{
-                fontSize: 11, color: 'var(--bad)', width: 42, textAlign: 'right', fontVariantNumeric: 'tabular-nums',
-              }}
-            >
-              {Math.round(r.lapse * 100)}
-              %
-            </span>
-          </div>
-        ))}
+          ))}
       </div>
     </div>
   )

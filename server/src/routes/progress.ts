@@ -2,7 +2,7 @@ import { Router } from 'express'
 import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql, or } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
-import { userProgress, words, decks, studySessions } from '../db/schema'
+import { userProgress, words, decks, studySessions, reviewEvents } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { UserProgress } from '../db/schema'
 
@@ -414,23 +414,115 @@ router.post('/:wordId/review', async (req, res) => {
   const schedule = nextReviewSchedule(existing, correct)
   const now = new Date()
 
-  const [updated] = await db
-    .update(userProgress)
-    .set({
-      repetitions: schedule.repetitions,
-      easeFactor: schedule.easeFactor,
-      intervalDays: schedule.intervalDays,
-      correct: existing.correct + (correct ? 1 : 0),
-      incorrect: existing.incorrect + (correct ? 0 : 1),
-      lastReviewed: now,
-      lastReviewCorrect: correct,
-      nextReview: schedule.nextReview,
-      updatedAt: now,
-    })
-    .where(eq(userProgress.id, existing.id))
-    .returning()
+  const [[updated]] = await Promise.all([
+    db
+      .update(userProgress)
+      .set({
+        repetitions: schedule.repetitions,
+        easeFactor: schedule.easeFactor,
+        intervalDays: schedule.intervalDays,
+        correct: existing.correct + (correct ? 1 : 0),
+        incorrect: existing.incorrect + (correct ? 0 : 1),
+        lastReviewed: now,
+        lastReviewCorrect: correct,
+        nextReview: schedule.nextReview,
+        updatedAt: now,
+      })
+      .where(eq(userProgress.id, existing.id))
+      .returning(),
+
+    db.insert(reviewEvents).values({ userId, wordId, correct }),
+  ])
 
   res.json({ progress: updated })
+})
+
+// GET /api/progress/tone-accuracy — accuracy per tone for reviews in the last 30 days
+router.get('/tone-accuracy', async (req, res) => {
+  const { userId } = req.user!
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  const thirtyDaysAgoISO = thirtyDaysAgo.toISOString()
+
+  const rows = await db.execute<{ tone: number; accuracy: number }>(sql`
+    SELECT
+      t.tone::int AS tone,
+      ROUND(AVG(CASE WHEN re.correct THEN 100.0 ELSE 0.0 END), 1)::float AS accuracy
+    FROM review_events re
+    JOIN words w ON w.id = re.word_id
+    CROSS JOIN UNNEST(w.tones) AS t(tone)
+    WHERE re.user_id = ${userId}
+      AND re.reviewed_at >= ${thirtyDaysAgoISO}::timestamptz
+      AND t.tone IN (1, 2, 3, 4, 5)
+    GROUP BY t.tone
+    ORDER BY t.tone
+  `)
+
+  const byTone: Record<number, number> = {}
+  for (const r of rows) byTone[r.tone] = r.accuracy
+
+  res.json({ byTone })
+})
+
+// GET /api/progress/top-struggles — 10 words with highest incorrect rate in last 30 days
+router.get('/top-struggles', async (req, res) => {
+  const { userId } = req.user!
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const rows = await db
+    .select({
+      simplified: words.simplified,
+      traditional: words.traditional,
+      pinyin: words.pinyin,
+      tones: words.tones,
+      meaning: words.meaning,
+      deck: decks.name,
+      incorrect: sql<number>`SUM(CASE WHEN NOT ${reviewEvents.correct} THEN 1 ELSE 0 END)`.mapWith(Number),
+      total: count(),
+    })
+    .from(reviewEvents)
+    .innerJoin(words, eq(words.id, reviewEvents.wordId))
+    .innerJoin(decks, eq(decks.id, words.deckId))
+    .where(and(
+      eq(reviewEvents.userId, userId),
+      gte(reviewEvents.reviewedAt, thirtyDaysAgo),
+    ))
+    .groupBy(words.id, decks.id)
+    .having(sql`SUM(CASE WHEN NOT ${reviewEvents.correct} THEN 1 ELSE 0 END) > 0`)
+    .orderBy(sql`SUM(CASE WHEN NOT ${reviewEvents.correct} THEN 1 ELSE 0 END)::float / COUNT(*) DESC`)
+    .limit(10)
+
+  const struggles = rows.map((r) => ({
+    ...r,
+    lapseRate: r.incorrect / r.total,
+  }))
+
+  res.json({ struggles })
+})
+
+// GET /api/progress/accuracy-trend — daily accuracy % for the last 30 active days
+router.get('/accuracy-trend', async (req, res) => {
+  const { userId } = req.user!
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const rows = await db
+    .select({
+      day: sql<string>`(${reviewEvents.reviewedAt})::date`,
+      correct: sql<number>`SUM(CASE WHEN ${reviewEvents.correct} THEN 1 ELSE 0 END)`.mapWith(Number),
+      total: count(),
+    })
+    .from(reviewEvents)
+    .where(and(
+      eq(reviewEvents.userId, userId),
+      gte(reviewEvents.reviewedAt, thirtyDaysAgo),
+    ))
+    .groupBy(sql`(${reviewEvents.reviewedAt})::date`)
+    .orderBy(sql`(${reviewEvents.reviewedAt})::date`)
+
+  const points = rows.map((r) => Math.round((r.correct / r.total) * 100))
+  res.json({ points })
 })
 
 export default router

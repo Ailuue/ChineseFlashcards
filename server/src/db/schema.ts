@@ -64,6 +64,18 @@ export const userProgress = pgTable('user_progress', {
   uniqUserWord: unique().on(t.userId, t.wordId),
 }))
 
+export const reviewEvents = pgTable('review_events', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id')
+    .references(() => users.id, { onDelete: 'cascade' })
+    .notNull(),
+  wordId: integer('word_id')
+    .references(() => words.id, { onDelete: 'cascade' })
+    .notNull(),
+  correct: boolean('correct').notNull(),
+  reviewedAt: timestamp('reviewed_at').defaultNow().notNull(),
+})
+
 export const studySessions = pgTable('study_sessions', {
   id: serial('id').primaryKey(),
   userId: integer('user_id')
@@ -95,6 +107,11 @@ export const userProgressRelations = relations(userProgress, ({ one }) => ({
 
 export const studySessionsRelations = relations(studySessions, ({ one }) => ({
   user: one(users, { fields: [studySessions.userId], references: [users.id] }),
+}))
+
+export const reviewEventsRelations = relations(reviewEvents, ({ one }) => ({
+  user: one(users, { fields: [reviewEvents.userId], references: [users.id] }),
+  word: one(words, { fields: [reviewEvents.wordId], references: [words.id] }),
 }))
 
 // Inferred types

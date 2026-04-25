@@ -83,7 +83,13 @@ const StudyScreen = () => {
     setSessionKey((k) => k + 1)
   }, [])
 
-  const flip = useCallback(() => setFlipped((f) => !f), [])
+  const flipLockRef = useRef(false)
+  const flip = useCallback(() => {
+    if (flipLockRef.current) return
+    flipLockRef.current = true
+    setFlipped((f) => !f)
+    setTimeout(() => { flipLockRef.current = false }, 600)
+  }, [])
 
   const rate = useCallback(
     (got: boolean) => {
@@ -264,7 +270,7 @@ const StudyScreen = () => {
             <div className="progress">
               <div
                 className="fill"
-                style={{ width: `${(reviewed / total) * 100}%` }}
+                style={{ width: `${(correct / total) * 100}%` }}
               />
             </div>
           </div>

@@ -90,6 +90,22 @@ export const api = {
     recentWords: { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lastReviewCorrect: boolean | null }[];
   }>('/api/progress/stats'),
 
+  accuracyTrend: () => request<{ points: number[] }>('/api/progress/accuracy-trend'),
+
+  toneAccuracy: () => request<{ byTone: Record<number, number> }>('/api/progress/tone-accuracy'),
+
+  topStruggles: () => request<{
+    struggles: {
+      simplified: string;
+      traditional: string;
+      pinyin: string;
+      tones: number[];
+      meaning: string;
+      deck: string;
+      lapseRate: number;
+    }[];
+  }>('/api/progress/top-struggles'),
+
   stats30: () => request<{
     reviews: number;
     accuracy: number | null;
