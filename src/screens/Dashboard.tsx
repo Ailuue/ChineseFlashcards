@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { FlashCard } from '../types'
-import { api } from '../api/client'
+import { api, type DeckInfo } from '../api/client'
 import Icon from '../components/Icon'
 import Heatmap from '../components/Heatmap'
 import ProgressBar from '../components/ProgressBar'
@@ -69,19 +69,24 @@ interface DueItemProps {
   deck: string;
   count: number;
   when: string;
-  tone?: 'bad';
+  onClick: () => void;
 }
 
 const DueItem = ({
-  deck, count, when, tone = undefined,
+  deck, count, when, onClick,
 }: DueItemProps) => (
-  <div style={{
-    display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg-elev)', borderRadius: 2, cursor: 'pointer',
-  }}
+  <div
+    role="button"
+    tabIndex={0}
+    onClick={onClick}
+    onKeyDown={(e) => e.key === 'Enter' && onClick()}
+    style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg-elev)', borderRadius: 2, cursor: 'pointer',
+    }}
   >
     <div>
       <div style={{ fontSize: 13, fontWeight: 500 }}>{deck}</div>
-      <div className="mono" style={{ fontSize: 10, color: tone === 'bad' ? 'var(--bad)' : 'var(--fg-dim)', marginTop: 2 }}>{when}</div>
+      <div className="mono" style={{ fontSize: 10, color: when === 'never studied' ? 'var(--bad)' : 'var(--fg-dim)', marginTop: 2 }}>{when}</div>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
       <span className="mono" style={{ fontSize: 16, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
@@ -161,8 +166,11 @@ const Dashboard = () => {
   const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
   const [timeTodayMin, setTimeTodayMin] = useState(0)
   const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
+  const [decks, setDecks] = useState<DeckInfo[]>([])
 
   useEffect(() => {
+    api.decks().then(({ decks: d }) => setDecks(d)).catch(() => undefined)
+
     api.activity().then(({ activity }) => {
       setHeatmapData(activityToHeatmapData(activity))
       setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
@@ -238,12 +246,21 @@ const Dashboard = () => {
       </div>
 
       <div style={{ padding: '20px 28px' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>// due_today.queue</div>
+        <div className="sec-label" style={{ marginBottom: 14 }}>weakest subjects</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <DueItem deck="Verbs" count={8} when="overdue · 2d" tone="bad" />
-          <DueItem deck="Pronouns" count={6} when="due today" />
-          <DueItem deck="Nouns · Food" count={5} when="due today" />
-          <DueItem deck="Time & Dates" count={4} when="due today" />
+          {decks
+            .filter((d) => d.learnedCount < d.wordCount)
+            .sort((a, b) => (b.wordCount - b.learnedCount) - (a.wordCount - a.learnedCount))
+            .slice(0, 4)
+            .map((d) => (
+              <DueItem
+                key={d.id}
+                deck={d.name}
+                count={d.wordCount}
+                when={d.learnedCount === 0 ? 'never studied' : `${d.wordCount - d.learnedCount} words remaining`}
+                onClick={() => navigate('/study/session', { state: { deck: d.name } })}
+              />
+            ))}
         </div>
       </div>
     </div>
