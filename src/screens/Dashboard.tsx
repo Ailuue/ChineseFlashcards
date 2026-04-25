@@ -237,7 +237,7 @@ const Dashboard = () => {
           display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14,
         }}
         >
-          <div className="sec-label">// activity · last 12 months</div>
+          <div className="sec-label">activity · last 12 months</div>
           <div className="mono" style={{ fontSize: 10, color: 'var(--fg-muted)' }}>
             <span style={{ color: 'var(--fg)' }}>{totalReviews}</span>
             {' '}
@@ -312,10 +312,10 @@ const Dashboard = () => {
           </div>
         </div>
 
-        <div className="sec-label" style={{ margin: '20px 0 10px' }}>// goals</div>
+        <div className="sec-label" style={{ margin: '20px 0 10px' }}>daily goals</div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <GoalRow label="10 min / day" value={0} max={10} unit="min" />
-          <GoalRow label="150 words by Jun 1" value={87} max={150} />
+          <GoalRow label="10 min / day" value={Math.min(timeTodayMin, 10)} max={10} unit="min" />
+          <GoalRow label="10 words / day" value={Math.min(todayCorrect, 10)} max={10} />
         </div>
       </div>
 
