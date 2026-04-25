@@ -12,7 +12,7 @@ router.post('/', async (req, res) => {
   const { userId } = req.user!
   const [session] = await db
     .insert(studySessions)
-    .values({ userId })
+    .values({ userId, startedAt: sql`now()` })
     .returning({ id: studySessions.id })
   res.json({ id: session.id })
 })

@@ -98,7 +98,7 @@ router.get('/stats', async (req, res) => {
     // Total seconds spent in completed study sessions today
     db
       .select({
-        totalSeconds: sql<number>`COALESCE(SUM(EXTRACT(EPOCH FROM (${studySessions.endedAt} - ${studySessions.startedAt}))), 0)`.mapWith(Number),
+        totalSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${studySessions.endedAt} > ${studySessions.startedAt} THEN EXTRACT(EPOCH FROM (${studySessions.endedAt} - ${studySessions.startedAt})) ELSE 0 END), 0)`.mapWith(Number),
       })
       .from(studySessions)
       .where(and(
