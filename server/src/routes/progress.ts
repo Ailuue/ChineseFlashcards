@@ -67,11 +67,11 @@ router.get('/stats', async (req, res) => {
     // Total words in the system
     db.select({ total: count() }).from(words),
 
-    // Words reviewed today, with their last review outcome
+    // All review events today (each attempt counts)
     db
-      .select({ lastReviewCorrect: userProgress.lastReviewCorrect })
-      .from(userProgress)
-      .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, todayStart))),
+      .select({ correct: reviewEvents.correct })
+      .from(reviewEvents)
+      .where(and(eq(reviewEvents.userId, userId), gte(reviewEvents.reviewedAt, todayStart))),
 
     // Total seconds spent in completed study sessions today
     db
@@ -133,7 +133,7 @@ router.get('/stats', async (req, res) => {
     cursor.setDate(cursor.getDate() - 1)
   }
 
-  const todayCorrect = todayRows.filter((r) => r.lastReviewCorrect === true).length
+  const todayCorrect = todayRows.filter((r) => r.correct === true).length
   const todayTotal = todayRows.length
   const todayAccuracy = todayTotal > 0 ? Math.round((todayCorrect / todayTotal) * 100) : null
 
@@ -164,16 +164,15 @@ router.get('/stats30', async (req, res) => {
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, thirtyDaysAgo))),
 
-    // Accuracy: fraction of recently-reviewed cards whose last review was correct
+    // Accuracy: fraction of all review attempts in the last 30 days that were correct
     db
       .select({
-        accuracy: sql<number>`ROUND(AVG(CASE WHEN ${userProgress.lastReviewCorrect} THEN 100.0 ELSE 0.0 END), 1)`.mapWith(Number),
+        accuracy: sql<number>`ROUND(AVG(CASE WHEN ${reviewEvents.correct} THEN 100.0 ELSE 0.0 END), 1)`.mapWith(Number),
       })
-      .from(userProgress)
+      .from(reviewEvents)
       .where(and(
-        eq(userProgress.userId, userId),
-        gte(userProgress.lastReviewed, thirtyDaysAgo),
-        isNotNull(userProgress.lastReviewCorrect),
+        eq(reviewEvents.userId, userId),
+        gte(reviewEvents.reviewedAt, thirtyDaysAgo),
       )),
 
     // Words learned: first encountered AND gotten correct within the last 30 days
