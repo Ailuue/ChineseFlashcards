@@ -90,6 +90,13 @@ export const api = {
     recentWords: { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lastReviewCorrect: boolean | null }[];
   }>('/api/progress/stats'),
 
+  stats30: () => request<{
+    reviews: number;
+    accuracy: number | null;
+    wordsLearned: number;
+    avgSessionSeconds: number;
+  }>('/api/progress/stats30'),
+
   dailyMix: () => request<{ words: Word[] }>('/api/progress/daily-mix'),
 
   startSession: () => request<{ id: number }>('/api/sessions', { method: 'POST' }),

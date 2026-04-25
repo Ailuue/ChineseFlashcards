@@ -173,6 +173,77 @@ router.get('/stats', async (req, res) => {
   })
 })
 
+// GET /api/progress/stats30 — 30-day KPI stats
+router.get('/stats30', async (req, res) => {
+  const { userId } = req.user!
+  const thirtyDaysAgo = new Date()
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+
+  const [reviewsRow, accuracyRow, learnedRow, sessionRow, activeDaysRows] = await Promise.all([
+    // Total cards reviewed in the last 30 days
+    db
+      .select({ total: count() })
+      .from(userProgress)
+      .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, thirtyDaysAgo))),
+
+    // Accuracy: fraction of recently-reviewed cards whose last review was correct
+    db
+      .select({
+        accuracy: sql<number>`ROUND(AVG(CASE WHEN ${userProgress.lastReviewCorrect} THEN 100.0 ELSE 0.0 END), 1)`.mapWith(Number),
+      })
+      .from(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        gte(userProgress.lastReviewed, thirtyDaysAgo),
+        isNotNull(userProgress.lastReviewCorrect),
+      )),
+
+    // Words learned: first encountered AND gotten correct within the last 30 days
+    db
+      .select({ total: count() })
+      .from(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        gt(userProgress.correct, 0),
+        gte(userProgress.createdAt, thirtyDaysAgo),
+      )),
+
+    // Total session seconds in last 30 days
+    db
+      .select({
+        totalSeconds: sql<number>`COALESCE(SUM(CASE WHEN ${studySessions.endedAt} > ${studySessions.startedAt} THEN EXTRACT(EPOCH FROM (${studySessions.endedAt} - ${studySessions.startedAt})) ELSE 0 END), 0)`.mapWith(Number),
+      })
+      .from(studySessions)
+      .where(and(
+        eq(studySessions.userId, userId),
+        isNotNull(studySessions.endedAt),
+        gte(studySessions.startedAt, thirtyDaysAgo),
+      )),
+
+    // Distinct active days in last 30 days
+    db
+      .selectDistinct({ day: sql<string>`(${userProgress.lastReviewed})::date` })
+      .from(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        isNotNull(userProgress.lastReviewed),
+        gte(userProgress.lastReviewed, thirtyDaysAgo),
+      )),
+  ])
+
+  const activeDays = activeDaysRows.length
+  const avgSessionSeconds = activeDays > 0
+    ? Math.round((sessionRow[0]?.totalSeconds ?? 0) / activeDays)
+    : 0
+
+  res.json({
+    reviews: reviewsRow[0]?.total ?? 0,
+    accuracy: accuracyRow[0]?.accuracy ?? null,
+    wordsLearned: learnedRow[0]?.total ?? 0,
+    avgSessionSeconds,
+  })
+})
+
 // GET /api/progress/daily-mix — 20 random weak words (never seen or last reviewed wrong)
 router.get('/daily-mix', async (req, res) => {
   const { userId } = req.user!

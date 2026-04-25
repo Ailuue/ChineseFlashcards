@@ -1,26 +1,19 @@
+import { useState, useEffect } from 'react'
 import { useTweaks } from '../context/TweaksContext'
-import { HSK1, HEATMAP_DATA } from '../data'
+import { HEATMAP_DATA, HSK1 } from '../data'
 import Heatmap from '../components/Heatmap'
 import Pinyin from '../components/Pinyin'
+import { api } from '../api/client'
 
 interface KPIProps {
   label: string;
   value: string;
-  delta: string;
-  down?: boolean;
 }
 
-const KPI = ({
-  label, value, delta, down = false,
-}: KPIProps) => (
+const KPI = ({ label, value }: KPIProps) => (
   <div className="stat">
     <div className="label">{label}</div>
     <div className="value">{value}</div>
-    <div className="delta" style={{ color: down ? 'var(--bad)' : 'var(--ok)' }}>
-      <span>{down ? '↓' : '↑'}</span>
-      {' '}
-      {delta}
-    </div>
   </div>
 )
 
@@ -91,8 +84,32 @@ const STRUGGLES = [
   { c: HSK1[21], lapse: 0.40 },
 ]
 
+function fmtMinutes(seconds: number): string {
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  if (m === 0) return '< 1 min'
+  if (s === 0) return `${m} min`
+  return `${m}:${String(s).padStart(2, '0')}`
+}
+
 const StatsScreen = () => {
   const { tweaks } = useTweaks()
+  const [reviews, setReviews] = useState<number | null>(null)
+  const [accuracy, setAccuracy] = useState<number | null>(null)
+  const [wordsLearned, setWordsLearned] = useState<number | null>(null)
+  const [avgSessionSeconds, setAvgSessionSeconds] = useState<number | null>(null)
+
+  useEffect(() => {
+    api.stats30().then(({
+      reviews: r, accuracy: a, wordsLearned: w, avgSessionSeconds: s,
+    }) => {
+      setReviews(r)
+      setAccuracy(a)
+      setWordsLearned(w)
+      setAvgSessionSeconds(s)
+    }).catch(() => undefined)
+  }, [])
+
   return (
     <div style={{
       flex: 1, overflowY: 'auto', padding: '24px 28px', display: 'flex', flexDirection: 'column', gap: 20,
@@ -104,10 +121,10 @@ const StatsScreen = () => {
       </div>
 
       <div className="kpi-grid">
-        <KPI label="reviews" value="214" delta="+32%" />
-        <KPI label="accuracy" value="84%" delta="+2.1 pts" />
-        <KPI label="retention · 7d" value="91%" delta="+4 pts" />
-        <KPI label="avg session" value="6:12" delta="-0:48" down />
+        <KPI label="reviews" value={reviews !== null ? String(reviews) : '—'} />
+        <KPI label="accuracy" value={accuracy !== null ? `${accuracy}%` : '—'} />
+        <KPI label="words learned" value={wordsLearned !== null ? String(wordsLearned) : '—'} />
+        <KPI label="avg session" value={avgSessionSeconds !== null ? fmtMinutes(avgSessionSeconds) : '—'} />
       </div>
 
       <div className="stats-charts-grid">
