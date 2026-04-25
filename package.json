@@ -18,6 +18,9 @@
   "engines": {
     "node": "22.x"
   },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "1.0.0-rc.17"
+  },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
