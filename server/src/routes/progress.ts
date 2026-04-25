@@ -4,7 +4,8 @@ import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks, studySessions, reviewEvents } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
-import type { UserProgress } from '../db/schema'
+import { nextReviewSchedule } from '../utils/srs'
+import { shuffle } from '../utils/shuffle'
 
 const router = Router()
 router.use(requireAuth)
@@ -12,29 +13,6 @@ router.use(requireAuth)
 const ReviewSchema = z.object({
   correct: z.boolean(),
 })
-
-// SM-2 algorithm: calculates next review interval
-function nextReviewSchedule(current: UserProgress, isCorrect: boolean) {
-  let { easeFactor, intervalDays, repetitions } = current
-
-  if (isCorrect) {
-    if (repetitions === 0) intervalDays = 1
-    else if (repetitions === 1) intervalDays = 4
-    else intervalDays = Math.round(intervalDays * easeFactor)
-
-    easeFactor = Math.max(1.3, easeFactor + 0.1)
-    repetitions += 1
-  } else {
-    intervalDays = 1
-    easeFactor = Math.max(1.3, easeFactor - 0.2)
-    repetitions = 0
-  }
-
-  const nextReview = new Date()
-  nextReview.setDate(nextReview.getDate() + intervalDays)
-
-  return { easeFactor, intervalDays, repetitions, nextReview }
-}
 
 // GET /api/progress/activity — daily review counts for the last 53 weeks
 router.get('/activity', async (req, res) => {
@@ -261,15 +239,6 @@ router.get('/daily-mix', async (req, res) => {
       eq(userProgress.lastReviewCorrect, false),
     ))
 
-  const shuffle = <T>(arr: T[]): T[] => {
-    const a = [...arr]
-    for (let i = a.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]]
-    }
-    return a
-  }
-
   res.json({ words: shuffle(pool).slice(0, 20) })
 })
 
@@ -364,16 +333,6 @@ router.get('/session', async (req, res) => {
       )
       .where(isNull(userProgress.id)),
   ])
-
-  // Shuffle each group, then interleave: cap new words at remaining slots after due
-  const shuffle = <T>(arr: T[]): T[] => {
-    const a = [...arr]
-    for (let i = a.length - 1; i > 0; i -= 1) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [a[i], a[j]] = [a[j], a[i]]
-    }
-    return a
-  }
 
   const pool = [...shuffle(dueWords), ...shuffle(newWords)].slice(0, count)
 

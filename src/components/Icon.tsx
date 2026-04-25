@@ -1,10 +1,12 @@
+import type { ReactElement } from 'react'
+
 interface IconProps {
   name: string;
   size?: number;
   stroke?: number;
 }
 
-const PATHS: Record<string, JSX.Element> = {
+const PATHS: Record<string, ReactElement> = {
   flame: <path d="M8 1c0 3-4 4-4 8a4 4 0 0 0 8 0c0-2-1-3-2-4 0 2-1 3-2 3 1-2 0-5 0-7z" />,
   book: (
     <>

@@ -3,7 +3,7 @@ interface HeatmapProps {
   compact?: boolean;
 }
 
-const toBucket = (v: number): number => {
+export const toBucket = (v: number): number => {
   if (v === 0) return 0
   if (v <= 2) return 1
   if (v <= 4) return 2

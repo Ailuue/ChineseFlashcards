@@ -7,27 +7,9 @@ import Icon from '../components/Icon'
 import Heatmap from '../components/Heatmap'
 import ProgressBar from '../components/ProgressBar'
 import Pinyin from '../components/Pinyin'
+import { greeting, timeAgo } from '../utils/time'
 
 const WEEKS = 53
-
-function greeting(): string {
-  const h = new Date().getHours()
-  if (h >= 3 && h < 12) return '早安'
-  if (h >= 12 && h < 17) return '午安'
-  return '晚安'
-}
-
-function timeAgo(iso: string | null): string {
-  if (!iso) return 'never'
-  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
-  if (secs < 60) return 'just now'
-  const mins = Math.floor(secs / 60)
-  if (mins < 60) return `${mins}m ago`
-  const hours = Math.floor(mins / 60)
-  if (hours < 24) return `${hours}h ago`
-  if (hours < 48) return 'yesterday'
-  return `${Math.floor(hours / 24)}d ago`
-}
 
 function activityToHeatmapData(activity: Record<string, number>): number[] {
   const totalDays = WEEKS * 7
