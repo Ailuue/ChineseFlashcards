@@ -1,4 +1,3 @@
 {
-  "buildCommand": "vite build",
-  "nodejs": "22.x"
+  "buildCommand": "vite build"
 }
