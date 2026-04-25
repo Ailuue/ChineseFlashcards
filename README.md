@@ -2,20 +2,20 @@
 
 A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
 
-<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 26 PM" src="https://github.com/user-attachments/assets/c7d3d1cb-529f-4596-b5f8-163d6341ca85" />
+<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 26 PM" src="https://github.com/user-attachments/assets/c7d3d1cb-529f-4596-b5f8-163d6341ca85" />
 
 ## Stack
 
 **Frontend**
 
-- **React 18** with **TypeScript** (strict mode)
+- **React 19** with **TypeScript** (strict mode)
 - **Vite** for development and bundling
-- **React Router v6** for client-side routing
+- **React Router v7** for client-side routing
 - **CSS custom properties** for theming (no CSS-in-JS, no framework)
 
 **Backend**
 
-- **Node.js / Express** with **TypeScript**
+- **Node.js / Express 5** with **TypeScript**
 - **PostgreSQL** database
 - **Drizzle ORM** for schema, migrations, and queries
 - **JWT** authentication with bcrypt password hashing
@@ -26,28 +26,29 @@ A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfol
 ### Frontend
 
 ```bash
-yarn install
-yarn start
+npm install
+npm start
 ```
 
 Runs the app at `http://localhost:5173`.
 
-| Command        | Description                          |
-| -------------- | ------------------------------------ |
-| `yarn start`   | Start the dev server                 |
-| `yarn build`   | Type-check and build for production  |
-| `yarn preview` | Preview the production build locally |
-| `yarn lint`    | Lint all `.ts` / `.tsx` files        |
+| Command             | Description                          |
+| ------------------- | ------------------------------------ |
+| `npm start`         | Start the dev server                 |
+| `npm run build`     | Type-check and build for production  |
+| `npm run preview`   | Preview the production build locally |
+| `npm run lint`      | Lint all `.ts` / `.tsx` files        |
+| `npm test`          | Run unit tests once                  |
+| `npm run test:watch`| Run unit tests in watch mode         |
 
 ### Backend
 
 ```bash
 cd server
-cp .env.example .env   # fill in DATABASE_URL, JWT_SECRET, PORT
+cp .env.example .env   # fill in DATABASE_URL, JWT_SECRET
 npm install
-npm run db:generate    # generate SQL migrations from schema
-npm run db:migrate     # apply migrations to the database
-npm run db:seed        # seed HSK vocabulary (10 decks, 30 words)
+npm run db:push        # push schema to database (dev)
+npm run db:seed        # seed HSK vocabulary (10 decks, ~150 words)
 npm run dev            # start dev server with hot-reload (tsx watch)
 ```
 
@@ -63,84 +64,117 @@ Runs the API at `http://localhost:3001`.
 | `npm run db:push`     | Push schema directly (dev only)            |
 | `npm run db:studio`   | Open Drizzle Studio database browser       |
 | `npm run db:seed`     | Seed vocabulary data                       |
+| `npm test`            | Run unit tests once                        |
+| `npm run test:watch`  | Run unit tests in watch mode               |
+
+### Environment variables (server)
+
+| Variable         | Required | Default                     |
+| ---------------- | -------- | --------------------------- |
+| `DATABASE_URL`   | Yes      | —                           |
+| `JWT_SECRET`     | Yes      | —                           |
+| `PORT`           | No       | `3001`                      |
+| `ALLOWED_ORIGIN` | No       | `http://localhost:5173`     |
+
+Frontend uses `VITE_API_URL` (defaults to `http://localhost:3001`).
 
 ## Screens
 
-| Route    | Screen                                                        |
-| -------- | ------------------------------------------------------------- |
-| `/`      | Dashboard — streak, due queue, activity heatmap, goals        |
-| `/study` | Study mode — flip cards, rate, spaced repetition              |
-| `/decks` | Deck browser — all HSK 1 decks with progress                  |
-| `/stats` | Stats — accuracy trends, tone breakdown, contribution heatmap |
+| Route           | Screen                                                                   |
+| --------------- | ------------------------------------------------------------------------ |
+| `/`             | Dashboard — greeting, streak, activity heatmap, daily mix, goals         |
+| `/study`        | Study setup — configure session count or pick a deck                     |
+| `/study/session`| Study mode — flip cards, rate with SM-2 spaced repetition                |
+| `/decks`        | Deck browser — all HSK decks with per-deck progress                      |
+| `/stats`        | Stats — 30-day KPIs, accuracy trend chart, tone breakdown, top struggles |
 
 ## Study Mode
 
 Cards cycle through three states without changing routes:
 
 1. **Front** — large hanzi character, click or press `Space` to reveal
-2. **Back** — tone-colored pinyin, meaning, audio button; press `1` (wrong) or `2` (right)
-3. **Summary** — accuracy, streak, timeline; restart without a page reload
+2. **Back** — tone-colored pinyin and meaning; press `1` (wrong) or `2` (right)
+3. **Summary** — accuracy, streak, score; restart without a page reload
 
-Wrong cards are requeued two positions ahead (simple SRS). A streak of 3+ correct answers triggers a sparkle animation.
+Wrong cards are requeued two positions ahead. A streak of 3+ correct answers triggers a sparkle animation. Sessions can be loaded with a pre-fetched word list (Daily Mix, deck click), a deck filter, or the default SRS queue of due + new words.
 
 ## API Reference
 
 All authenticated routes require `Authorization: Bearer <token>`.
 
-| Method | Path                           | Auth | Description                         |
-| ------ | ------------------------------ | ---- | ----------------------------------- |
-| `GET`  | `/health`                      | —    | Health check                        |
-| `POST` | `/api/auth/register`           | —    | Create account                      |
-| `POST` | `/api/auth/login`              | —    | Get JWT                             |
-| `GET`  | `/api/auth/me`                 | ✓    | Current user                        |
-| `GET`  | `/api/words`                   | —    | List words (`?deck=Verbs&q=你`)     |
-| `GET`  | `/api/words/:id`               | —    | Single word                         |
-| `GET`  | `/api/decks`                   | —    | All decks with word counts          |
-| `GET`  | `/api/decks/:id`               | —    | Deck with its words                 |
-| `GET`  | `/api/progress`                | ✓    | User's full SRS progress            |
-| `GET`  | `/api/progress/due`            | ✓    | Words due for review now            |
-| `POST` | `/api/progress/:wordId/review` | ✓    | Record review (`{ correct: bool }`) |
+| Method | Path                                   | Auth | Description                              |
+| ------ | -------------------------------------- | ---- | ---------------------------------------- |
+| `GET`  | `/health`                              | —    | Health check                             |
+| `POST` | `/api/auth/register`                   | —    | Create account                           |
+| `POST` | `/api/auth/login`                      | —    | Get JWT                                  |
+| `GET`  | `/api/auth/me`                         | ✓    | Current user                             |
+| `GET`  | `/api/words`                           | —    | List words (`?deck=Verbs&q=你`)          |
+| `GET`  | `/api/words/:id`                       | —    | Single word                              |
+| `GET`  | `/api/decks`                           | —    | All decks with word + learned counts     |
+| `GET`  | `/api/decks/:id`                       | —    | Deck with its words                      |
+| `GET`  | `/api/progress/activity`               | ✓    | Daily review counts for last 53 weeks    |
+| `GET`  | `/api/progress/stats`                  | ✓    | Dashboard stats (streak, accuracy, time) |
+| `GET`  | `/api/progress/stats30`                | ✓    | 30-day KPIs for stats screen             |
+| `GET`  | `/api/progress/session`                | ✓    | Due + new words for a study session      |
+| `GET`  | `/api/progress/daily-mix`              | ✓    | 20 weak/unseen words                     |
+| `GET`  | `/api/progress/accuracy-trend`         | ✓    | Daily accuracy % for last 30 days        |
+| `GET`  | `/api/progress/tone-accuracy`          | ✓    | Accuracy broken down by tone             |
+| `GET`  | `/api/progress/top-struggles`          | ✓    | 10 words with highest 30-day lapse rate  |
+| `GET`  | `/api/progress/due`                    | ✓    | Words due for review now                 |
+| `POST` | `/api/progress/:wordId/review`         | ✓    | Record review (`{ correct: bool }`)      |
+| `POST` | `/api/sessions`                        | ✓    | Start a study session                    |
+| `PATCH`| `/api/sessions/:id/end`                | ✓    | End a study session                      |
 
 ## Project Structure
 
 ```
-src/                        # Frontend (React + Vite)
-├── App.tsx                 # BrowserRouter + Routes
+src/                          # Frontend (React + Vite)
+├── App.tsx                   # BrowserRouter + Routes + RequireAuth guard
+├── api/client.ts             # Typed API client (all fetch calls)
 ├── context/
-│   └── TweaksContext.tsx   # Theme + display preferences
+│   ├── AuthContext.tsx        # JWT auth state, persisted to localStorage
+│   └── TweaksContext.tsx      # Theme + display preferences (script, toneColor, etc.)
 ├── components/
-│   ├── Layout.tsx          # Shared shell: Topbar + Tabs + Outlet
-│   ├── Icon.tsx            # Inline SVG icon set
-│   ├── Pinyin.tsx          # Tone-colored pinyin renderer
-│   └── Heatmap.tsx         # GitHub-style contribution heatmap
+│   ├── Layout.tsx             # Shared shell: Topbar + Tabs + Outlet
+│   ├── Icon.tsx               # Inline SVG icon set
+│   ├── Pinyin.tsx             # Tone-colored pinyin renderer
+│   ├── Heatmap.tsx            # GitHub-style activity heatmap
+│   └── ProgressBar.tsx        # Generic progress bar
 ├── screens/
-│   ├── Dashboard.tsx
-│   ├── StudyScreen.tsx     # Flip card state machine + SRS queue
-│   ├── SessionSummary.tsx  # Post-session results
-│   ├── DeckBrowser.tsx
-│   └── StatsScreen.tsx
-├── data/
-│   └── index.ts            # Static HSK seed data
+│   ├── Dashboard.tsx          # Main dashboard with stats, heatmap, goals
+│   ├── StudySetupScreen.tsx   # Session configuration
+│   ├── StudyScreen.tsx        # Flip card state machine + SRS queue
+│   ├── SessionSummary.tsx     # Post-session results
+│   ├── DeckBrowser.tsx        # HSK deck list with progress
+│   ├── StatsScreen.tsx        # 30-day stats, charts, tone breakdown
+│   ├── LoginScreen.tsx
+│   └── RegisterScreen.tsx
+├── utils/
+│   └── time.ts                # timeAgo(), greeting()
 ├── types/index.ts
-└── styles/index.css        # Design tokens (light/dark), component styles
+└── styles/index.css           # Design tokens (light/dark), all component styles
 
-server/                     # Backend (Express + Drizzle + PostgreSQL)
+server/                        # Backend (Express + Drizzle + PostgreSQL)
 ├── src/
 │   ├── db/
-│   │   ├── schema.ts       # Drizzle schema: users, decks, words, user_progress
-│   │   ├── index.ts        # postgres client + drizzle instance
-│   │   ├── migrate.ts      # Programmatic migration runner
-│   │   └── seed.ts         # HSK vocabulary seed
+│   │   ├── schema.ts          # All table definitions and relations
+│   │   ├── index.ts           # postgres client + drizzle instance
+│   │   ├── migrate.ts         # Programmatic migration runner
+│   │   └── seed.ts            # HSK vocabulary seed
 │   ├── middleware/
-│   │   └── auth.ts         # JWT signing + requireAuth middleware
+│   │   └── auth.ts            # JWT signing + requireAuth middleware
 │   ├── routes/
-│   │   ├── auth.ts         # register / login / me
-│   │   ├── words.ts        # list + search words
-│   │   ├── decks.ts        # list decks + get deck with words
-│   │   └── progress.ts     # SRS progress + SM-2 scheduling
-│   └── index.ts            # Express app entry point
+│   │   ├── auth.ts            # register / login / me
+│   │   ├── words.ts           # list + search words
+│   │   ├── decks.ts           # list decks + deck detail
+│   │   ├── progress.ts        # SRS progress, SM-2 scheduling, all stats
+│   │   └── sessions.ts        # Study session start/end (time tracking)
+│   ├── utils/
+│   │   ├── srs.ts             # SM-2 algorithm (nextReviewSchedule)
+│   │   └── shuffle.ts         # Fisher-Yates shuffle
+│   └── index.ts               # Express app entry point
 ├── drizzle.config.ts
-└── railway.json            # Railway build + deploy config
+└── railway.json               # Railway build + deploy config
 ```
 
 ## Design
@@ -169,16 +203,16 @@ Standard pinyin tone colors are used throughout:
 
 **Frontend → Vercel / Railway**
 
-Set `VITE_API_URL` to the backend Railway URL and update the fetch calls in the frontend.
+Set `VITE_API_URL` to the backend Railway URL.
 
 ## More Screenshots
 
 ### Desktop
 
-<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 16 PM" src="https://github.com/user-attachments/assets/4a90013e-57aa-4e18-89b3-7b063352b0f8" />
-<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 31 PM" src="https://github.com/user-attachments/assets/33c86fc5-4e7e-4789-a538-0f41ec93df8a" />
-<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 37 PM" src="https://github.com/user-attachments/assets/d2565f66-cf69-4afc-82b6-ac6fc3376548" />
+<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 16 PM" src="https://github.com/user-attachments/assets/4a90013e-57aa-4e18-89b3-7b063352b0f8" />
+<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 31 PM" src="https://github.com/user-attachments/assets/33c86fc5-4e7e-4789-a538-0f41ec93df8a" />
+<img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 37 PM" src="https://github.com/user-attachments/assets/d2565f66-cf69-4afc-82b6-ac6fc3376548" />
 
 ### Mobile
 
-<img width="24%" alt="Screenshot 2026-04-23 at 7 16 47 PM" src="https://github.com/user-attachments/assets/1ac06a5f-1611-40a9-833b-ec5310647adb" /><img width="24%" alt="Screenshot 2026-04-23 at 7 16 54 PM" src="https://github.com/user-attachments/assets/47a0b766-7b1b-4be3-abbb-c068899d1ca4" /><img width="24%" alt="Screenshot 2026-04-23 at 7 16 58 PM" src="https://github.com/user-attachments/assets/9b493d77-0d50-4938-bf9a-64bf9dd0ae22" /><img width="24%" alt="Screenshot 2026-04-23 at 7 17 03 PM" src="https://github.com/user-attachments/assets/348fe73f-4d7d-477f-a4eb-ea084c286b53" />
+<img width="24%" alt="Screenshot 2026-04-23 at 7 16 47 PM" src="https://github.com/user-attachments/assets/1ac06a5f-1611-40a9-833b-ec5310647adb" /><img width="24%" alt="Screenshot 2026-04-23 at 7 16 54 PM" src="https://github.com/user-attachments/assets/47a0b766-7b1b-4be3-abbb-c068899d1ca4" /><img width="24%" alt="Screenshot 2026-04-23 at 7 16 58 PM" src="https://github.com/user-attachments/assets/9b493d77-0d50-4938-bf9a-64bf9dd0ae22" /><img width="24%" alt="Screenshot 2026-04-23 at 7 17 03 PM" src="https://github.com/user-attachments/assets/348fe73f-4d7d-477f-a4eb-ea084c286b53" />
