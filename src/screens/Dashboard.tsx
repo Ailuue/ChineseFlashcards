@@ -10,6 +10,25 @@ import Pinyin from '../components/Pinyin'
 
 const WEEKS = 53
 
+function greeting(): string {
+  const h = new Date().getHours()
+  if (h >= 3 && h < 12) return '早安'
+  if (h >= 12 && h < 17) return '午安'
+  return '晚安'
+}
+
+function timeAgo(iso: string | null): string {
+  if (!iso) return 'never'
+  const secs = Math.floor((Date.now() - new Date(iso).getTime()) / 1000)
+  if (secs < 60) return 'just now'
+  const mins = Math.floor(secs / 60)
+  if (mins < 60) return `${mins}m ago`
+  const hours = Math.floor(mins / 60)
+  if (hours < 24) return `${hours}h ago`
+  if (hours < 48) return 'yesterday'
+  return `${Math.floor(hours / 24)}d ago`
+}
+
 function activityToHeatmapData(activity: Record<string, number>): number[] {
   const totalDays = WEEKS * 7
   const today = new Date()
@@ -166,6 +185,8 @@ const Dashboard = () => {
   const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
   const [timeTodayMin, setTimeTodayMin] = useState(0)
   const [todayCorrect, setTodayCorrect] = useState(0)
+  const [decksTodayCount, setDecksTodayCount] = useState(0)
+  const [lastReviewedAt, setLastReviewedAt] = useState<string | null>(null)
   const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
   const [decks, setDecks] = useState<DeckInfo[]>([])
   const [dailyMixWords, setDailyMixWords] = useState<import('../api/client').Word[]>([])
@@ -182,7 +203,8 @@ const Dashboard = () => {
     }).catch(() => undefined)
 
     api.stats().then(({
-      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, todayCorrect: tc, timeTodaySeconds, recentWords: rw,
+      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, todayCorrect: tc,
+      timeTodaySeconds, decksTodayCount: dtc, lastReviewedAt: lra, recentWords: rw,
     }) => {
       setStreak(s)
       setLearnedCount(l)
@@ -190,6 +212,8 @@ const Dashboard = () => {
       setTodayAccuracy(a)
       setTodayCorrect(tc)
       setTimeTodayMin(Math.round(timeTodaySeconds / 60))
+      setDecksTodayCount(dtc)
+      setLastReviewedAt(lra)
       setRecentWords(rw)
     }).catch(() => undefined)
   }, [])
@@ -201,19 +225,35 @@ const Dashboard = () => {
     }}
     >
       <div style={{ flex: 1 }}>
-        <div className="sec-label" style={{ marginBottom: 8 }}>// Tuesday, Apr 23 · 晚上好</div>
+        <div className="sec-label" style={{ marginBottom: 8 }}>
+          {`// ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${greeting()}`}
+        </div>
         <div style={{
           fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4,
         }}
         >
-          You have
-          {' '}
-          <span style={{ color: 'var(--accent)' }}>23</span>
-          {' '}
-          cards due.
+          {todayCorrect >= 10 ? "You're doing great! Keep learning!" : (
+            <>
+              You have
+              {' '}
+              <span style={{ color: 'var(--accent)' }}>{10 - todayCorrect}</span>
+              {' '}
+              words to learn today
+            </>
+          )}
         </div>
         <div style={{ color: 'var(--fg-muted)', fontSize: 14 }}>
-          ~6 min session · 3 decks · last review 14 hours ago
+          {timeTodayMin}
+          {' '}
+          min ·
+          {' '}
+          {decksTodayCount}
+          {' '}
+          {decksTodayCount === 1 ? 'deck' : 'decks'}
+          {' '}
+          · last session
+          {' '}
+          {timeAgo(lastReviewedAt)}
         </div>
       </div>
       <button type="button" className="btn primary" style={{ padding: '14px 20px' }} onClick={() => navigate('/study')}>

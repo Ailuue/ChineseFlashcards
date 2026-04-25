@@ -85,6 +85,8 @@ export const api = {
     todayCorrect: number;
     todayTotal: number;
     timeTodaySeconds: number;
+    decksTodayCount: number;
+    lastReviewedAt: string | null;
     recentWords: { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lastReviewCorrect: boolean | null }[];
   }>('/api/progress/stats'),
 

@@ -73,7 +73,7 @@ router.get('/stats', async (req, res) => {
   const todayStart = new Date()
   todayStart.setHours(0, 0, 0, 0)
 
-  const [activeDays, learnedRow, totalRow, todayRows, timeRow, recentWords] = await Promise.all([
+  const [activeDays, learnedRow, totalRow, todayRows, timeRow, decksTodayRow, lastReviewedRow, recentWords] = await Promise.all([
     // All distinct days with at least one review
     db
       .selectDistinct({ day: sql<string>`TO_CHAR((${userProgress.lastReviewed})::date, 'YYYY-MM-DD')` })
@@ -106,6 +106,19 @@ router.get('/stats', async (req, res) => {
         isNotNull(studySessions.endedAt),
         gte(studySessions.startedAt, todayStart),
       )),
+
+    // Distinct decks reviewed today
+    db
+      .select({ deckCount: sql<number>`COUNT(DISTINCT ${words.deckId})`.mapWith(Number) })
+      .from(userProgress)
+      .innerJoin(words, eq(words.id, userProgress.wordId))
+      .where(and(eq(userProgress.userId, userId), gte(userProgress.lastReviewed, todayStart))),
+
+    // Most recent review timestamp overall, formatted as UTC ISO string
+    db
+      .select({ lastReviewedAt: sql<string | null>`TO_CHAR(MAX(${userProgress.lastReviewed}), 'YYYY-MM-DD"T"HH24:MI:SS"Z"')` })
+      .from(userProgress)
+      .where(and(eq(userProgress.userId, userId), isNotNull(userProgress.lastReviewed))),
 
     // 5 most recently reviewed words
     db
@@ -154,6 +167,8 @@ router.get('/stats', async (req, res) => {
     todayCorrect,
     todayTotal,
     timeTodaySeconds: timeRow[0]?.totalSeconds ?? 0,
+    decksTodayCount: decksTodayRow[0]?.deckCount ?? 0,
+    lastReviewedAt: lastReviewedRow[0]?.lastReviewedAt ?? null,
     recentWords,
   })
 })
