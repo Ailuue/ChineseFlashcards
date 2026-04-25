@@ -22,6 +22,13 @@
       "when": 1777039142666,
       "tag": "0002_workable_beast",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1777161375778,
+      "tag": "0003_magenta_vulcan",
+      "breakpoints": true
     }
   ]
 }
