@@ -165,11 +165,15 @@ const Dashboard = () => {
   const [totalWords, setTotalWords] = useState(0)
   const [todayAccuracy, setTodayAccuracy] = useState<number | null>(null)
   const [timeTodayMin, setTimeTodayMin] = useState(0)
+  const [todayCorrect, setTodayCorrect] = useState(0)
   const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
   const [decks, setDecks] = useState<DeckInfo[]>([])
+  const [dailyMixWords, setDailyMixWords] = useState<import('../api/client').Word[]>([])
 
   useEffect(() => {
     api.decks().then(({ decks: d }) => setDecks(d)).catch(() => undefined)
+
+    api.dailyMix().then(({ words: w }) => setDailyMixWords(w)).catch(() => undefined)
 
     api.activity().then(({ activity }) => {
       setHeatmapData(activityToHeatmapData(activity))
@@ -178,12 +182,13 @@ const Dashboard = () => {
     }).catch(() => undefined)
 
     api.stats().then(({
-      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, timeTodaySeconds, recentWords: rw,
+      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, todayCorrect: tc, timeTodaySeconds, recentWords: rw,
     }) => {
       setStreak(s)
       setLearnedCount(l)
       setTotalWords(t)
       setTodayAccuracy(a)
+      setTodayCorrect(tc)
       setTimeTodayMin(Math.round(timeTodaySeconds / 60))
       setRecentWords(rw)
     }).catch(() => undefined)
@@ -267,25 +272,43 @@ const Dashboard = () => {
 
     <div className="dash-lower-grid">
       <div style={{ padding: '20px 28px', borderRight: '1px solid var(--border)' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>// pinned · daily mix</div>
-        <div className="card" style={{ padding: 18 }}>
+        <div className="sec-label" style={{ marginBottom: 14 }}>daily mix</div>
+        <div
+          className="card"
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate('/study/session', { state: { words: dailyMixWords } })}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/study/session', { state: { words: dailyMixWords } })}
+          style={{ padding: 18, cursor: 'pointer' }}
+        >
           <div style={{
             display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14,
           }}
           >
             <div>
               <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 2 }}>Daily Mix</div>
-              <div className="mono" style={{ fontSize: 11, color: 'var(--fg-muted)' }}>auto · 20 cards · mixed difficulty</div>
+              <div className="mono" style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
+                {dailyMixWords.length}
+                {' '}
+                cards · weak &amp; unseen
+              </div>
             </div>
             <span className="badge" style={{ color: 'var(--accent)' }}>recommended</span>
           </div>
-          <ProgressBar value={0.42} />
+          <ProgressBar value={Math.min(todayCorrect, 20) / 20} />
           <div style={{
             display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-dim)',
           }}
           >
-            <span>42% complete</span>
-            <span>12 / 20 due</span>
+            <span>
+              {Math.round(Math.min(todayCorrect, 20) / 20 * 100)}
+              % complete
+            </span>
+            <span>
+              {Math.min(todayCorrect, 20)}
+              {' '}
+              / 20
+            </span>
           </div>
         </div>
 

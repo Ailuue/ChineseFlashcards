@@ -4,10 +4,19 @@ import {
 import { useLocation } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { SessionCard } from '../types'
-import { api } from '../api/client'
+import { api, type Word } from '../api/client'
 import Icon from '../components/Icon'
 import Pinyin from '../components/Pinyin'
 import SessionSummary from './SessionSummary'
+
+function shuffle<T>(arr: T[]): T[] {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
 
 const StudyScreen = () => {
   const { tweaks, toggleScript } = useTweaks()
@@ -23,9 +32,10 @@ const StudyScreen = () => {
       }
     }
   }, [])
-  const state = location.state as { count?: number; deck?: string } | null
+  const state = location.state as { count?: number; deck?: string; words?: Word[] } | null
   const sessionCount = state?.count ?? 20
   const deckFilter = state?.deck ?? null
+  const wordList = state?.words ?? null
   const [sessionKey, setSessionKey] = useState(0)
   const [loadedCards, setLoadedCards] = useState<SessionCard[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
@@ -41,23 +51,26 @@ const StudyScreen = () => {
   useEffect(() => {
     setLoadedCards(null)
     setLoadError(null)
-    const load = deckFilter
-      ? api.words({ deck: deckFilter, limit: 500 }).then((res) => {
-        const shuffled = [...res.words]
-        for (let i = shuffled.length - 1; i > 0; i -= 1) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
-        }
-        return shuffled.map((w) => ({ ...w, attempts: 0 }))
-      })
-      : api.session(sessionCount).then((res) => res.words.map((w) => ({ ...w, attempts: 0 })))
+
+    let load: Promise<SessionCard[]>
+    if (wordList) {
+      load = Promise.resolve(shuffle(wordList).map((w) => ({ ...w, attempts: 0 })))
+    } else if (deckFilter) {
+      load = api.words({ deck: deckFilter, limit: 500 })
+        .then((res) => shuffle(res.words).map((w) => ({ ...w, attempts: 0 })))
+    } else {
+      load = api.session(sessionCount).then((res) => res.words.map((w) => ({ ...w, attempts: 0 })))
+    }
+
     load
       .then((cards) => {
         setLoadedCards(cards)
         setQueue(cards)
       })
-      .catch((err: unknown) => setLoadError(err instanceof Error ? err.message : 'Failed to load cards'))
-  }, [sessionCount, sessionKey, deckFilter])
+      .catch((err: unknown) => setLoadError(
+        err instanceof Error ? err.message : 'Failed to load cards',
+      ))
+  }, [sessionCount, sessionKey, deckFilter, wordList])
 
   const resetSession = useCallback(() => {
     setFlipped(false)

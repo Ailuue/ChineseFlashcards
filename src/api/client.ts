@@ -82,10 +82,13 @@ export const api = {
     learnedCount: number;
     totalWords: number;
     todayAccuracy: number | null;
+    todayCorrect: number;
     todayTotal: number;
     timeTodaySeconds: number;
     recentWords: { simplified: string; traditional: string; pinyin: string; tones: number[]; meaning: string; deck: string; lastReviewCorrect: boolean | null }[];
   }>('/api/progress/stats'),
+
+  dailyMix: () => request<{ words: Word[] }>('/api/progress/daily-mix'),
 
   startSession: () => request<{ id: number }>('/api/sessions', { method: 'POST' }),
 

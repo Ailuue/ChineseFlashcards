@@ -1,5 +1,5 @@
 import { Router } from 'express'
-import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql } from 'drizzle-orm'
+import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql, or } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { userProgress, words, decks, studySessions } from '../db/schema'
@@ -151,10 +151,40 @@ router.get('/stats', async (req, res) => {
     learnedCount: learnedRow[0]?.learned ?? 0,
     totalWords: totalRow[0]?.total ?? 0,
     todayAccuracy,
+    todayCorrect,
     todayTotal,
     timeTodaySeconds: timeRow[0]?.totalSeconds ?? 0,
     recentWords,
   })
+})
+
+// GET /api/progress/daily-mix — 20 random weak words (never seen or last reviewed wrong)
+router.get('/daily-mix', async (req, res) => {
+  const { userId } = req.user!
+
+  const pool = await db
+    .select(wordColumns)
+    .from(words)
+    .innerJoin(decks, eq(decks.id, words.deckId))
+    .leftJoin(
+      userProgress,
+      and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)),
+    )
+    .where(or(
+      isNull(userProgress.id),
+      eq(userProgress.lastReviewCorrect, false),
+    ))
+
+  const shuffle = <T>(arr: T[]): T[] => {
+    const a = [...arr]
+    for (let i = a.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
+  }
+
+  res.json({ words: shuffle(pool).slice(0, 20) })
 })
 
 // GET /api/progress — all progress for the current user
