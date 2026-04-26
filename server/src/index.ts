@@ -1,6 +1,8 @@
 import 'dotenv/config'
 import express, { Request, Response, NextFunction } from 'express'
 import cors from 'cors'
+import helmet from 'helmet'
+import rateLimit from 'express-rate-limit'
 import authRoutes from './routes/auth'
 import wordsRoutes from './routes/words'
 import decksRoutes from './routes/decks'
@@ -11,6 +13,9 @@ const app = express()
 const PORT = process.env.PORT ?? 3001
 
 // ── Middleware ──────────────────────────────────────────────────────────────
+app.set('trust proxy', 1)
+app.use(helmet())
+
 const allowedOrigins = (process.env.ALLOWED_ORIGIN ?? 'http://localhost:5173').split(',').map((o) => o.trim())
 app.use(cors({
   origin: (origin, cb) => {
@@ -21,12 +26,20 @@ app.use(cors({
 }))
 app.use(express.json())
 
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many attempts, please try again later' },
+})
+
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-app.use('/api/auth', authRoutes)
+app.use('/api/auth', authLimiter, authRoutes)
 app.use('/api/words', wordsRoutes)
 app.use('/api/decks', decksRoutes)
 app.use('/api/progress', progressRoutes)

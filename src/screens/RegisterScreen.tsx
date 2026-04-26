@@ -86,7 +86,11 @@ const Field = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => { setFocused(false); onBlur?.() }}
+          onBlur={(e) => {
+            setFocused(false)
+            const rel = e.relatedTarget as HTMLElement | null
+            if (!rel || rel.getAttribute('type') !== 'submit') onBlur?.()
+          }}
           placeholder={placeholder}
           autoFocus={autoFocus}
           style={{
@@ -144,6 +148,7 @@ const RegisterScreen = () => {
     if (!touched.password) return null
     if (!password) return 'password is required'
     if (password.length < 8) return `too short · ${password.length}/8 min`
+    if (password.length > 128) return `too long · ${password.length}/128 max`
     return null
   })()
 
@@ -153,7 +158,7 @@ const RegisterScreen = () => {
   if (strength <= 1) strengthColor = 'var(--bad)'
   else if (strength <= 2) strengthColor = 'var(--warn)'
 
-  const canSubmit = username.length >= 3 && password.length >= 8 && !userError && !pwError
+  const canSubmit = username.length >= 3 && password.length >= 8 && password.length <= 128 && !userError && !pwError
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()

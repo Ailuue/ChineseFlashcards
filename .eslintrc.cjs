@@ -1,11 +1,7 @@
 module.exports = {
   root: true,
   env: { browser: true, es2020: true },
-  extends: [
-    'airbnb',
-    'airbnb-typescript',
-    'airbnb/hooks',
-  ],
+  extends: ['airbnb', 'airbnb-typescript', 'airbnb/hooks', 'prettier'],
   parser: '@typescript-eslint/parser',
   parserOptions: {
     ecmaVersion: 'latest',
@@ -32,7 +28,10 @@ module.exports = {
     // Named arrow-function components are fine
     'react/function-component-definition': [
       'error',
-      { namedComponents: 'arrow-function', unnamedComponents: 'arrow-function' },
+      {
+        namedComponents: 'arrow-function',
+        unnamedComponents: 'arrow-function',
+      },
     ],
     // Default parameter values in destructuring are the modern TS equivalent of defaultProps
     'react/require-default-props': ['error', { functions: 'defaultArguments' }],
@@ -43,4 +42,4 @@ module.exports = {
     // autoFocus is intentional on first form field for keyboard UX
     'jsx-a11y/no-autofocus': 'off',
   },
-};
+}

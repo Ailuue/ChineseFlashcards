@@ -72,7 +72,11 @@ const Field = ({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onFocus={() => setFocused(true)}
-          onBlur={() => { setFocused(false); onBlur?.() }}
+          onBlur={(e) => {
+            setFocused(false)
+            const rel = e.relatedTarget as HTMLElement | null
+            if (!rel || rel.getAttribute('type') !== 'submit') onBlur?.()
+          }}
           placeholder={placeholder}
           autoFocus={autoFocus}
           style={{

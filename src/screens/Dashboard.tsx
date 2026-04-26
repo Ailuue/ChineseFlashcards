@@ -29,98 +29,148 @@ function activityToHeatmapData(activity: Record<string, number>): number[] {
 }
 
 interface StatCellProps {
-  label: string;
-  value: string;
-  unit?: string;
-  accent?: boolean;
-  icon?: string;
-  sub?: string;
+  label: string
+  value: string
+  unit?: string
+  accent?: boolean
+  icon?: string
+  sub?: string
 }
 
 const StatCell = ({
-  label, value, unit = '', accent = false, icon = '', sub = '',
+  label,
+  value,
+  unit = '',
+  accent = false,
+  icon = '',
+  sub = '',
 }: StatCellProps) => (
   <div style={{ padding: '20px 22px', borderRight: '1px solid var(--border)' }}>
     <div
       className="sec-label"
       style={{
-        marginBottom: 10, display: 'flex', alignItems: 'center', gap: 6,
+        marginBottom: 10,
+        display: 'flex',
+        alignItems: 'center',
+        gap: 6,
       }}
     >
       {icon && <Icon name={icon} size={10} />}
       {label}
     </div>
-    <div style={{
-      fontFamily: 'var(--font-mono)', fontSize: 32, fontWeight: 500, lineHeight: 1, letterSpacing: '-0.02em', color: accent ? 'var(--accent)' : 'var(--fg)', fontVariantNumeric: 'tabular-nums',
-    }}
+    <div
+      style={{
+        fontFamily: 'var(--font-mono)',
+        fontSize: 32,
+        fontWeight: 500,
+        lineHeight: 1,
+        letterSpacing: '-0.02em',
+        color: accent ? 'var(--accent)' : 'var(--fg)',
+        fontVariantNumeric: 'tabular-nums',
+      }}
     >
       {value}
-      <span style={{
-        fontSize: 14, color: 'var(--fg-dim)', fontWeight: 400, marginLeft: 6,
-      }}
+      <span
+        style={{
+          fontSize: 14,
+          color: 'var(--fg-dim)',
+          fontWeight: 400,
+          marginLeft: 6,
+        }}
       >
         {unit}
       </span>
     </div>
-    {sub && <div className="mono" style={{ fontSize: 10.5, color: 'var(--fg-dim)', marginTop: 6 }}>{sub}</div>}
+    {sub && (
+      <div
+        className="mono"
+        style={{ fontSize: 10.5, color: 'var(--fg-dim)', marginTop: 6 }}
+      >
+        {sub}
+      </div>
+    )}
   </div>
 )
 
 interface DueItemProps {
-  deck: string;
-  count: number;
-  when: string;
-  onClick: () => void;
+  deck: string
+  count: number
+  when: string
+  onClick: () => void
 }
 
-const DueItem = ({
-  deck, count, when, onClick,
-}: DueItemProps) => (
+const DueItem = ({ deck, count, when, onClick }: DueItemProps) => (
   <div
     role="button"
     tabIndex={0}
     onClick={onClick}
     onKeyDown={(e) => e.key === 'Enter' && onClick()}
     style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 12px', border: '1px solid var(--border)', background: 'var(--bg-elev)', borderRadius: 2, cursor: 'pointer',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '10px 12px',
+      border: '1px solid var(--border)',
+      background: 'var(--bg-elev)',
+      borderRadius: 2,
+      cursor: 'pointer',
     }}
   >
     <div>
       <div style={{ fontSize: 13, fontWeight: 500 }}>{deck}</div>
-      <div className="mono" style={{ fontSize: 10, color: when === 'never studied' ? 'var(--bad)' : 'var(--fg-dim)', marginTop: 2 }}>{when}</div>
+      <div
+        className="mono"
+        style={{
+          fontSize: 10,
+          color: when === 'never studied' ? 'var(--bad)' : 'var(--fg-dim)',
+          marginTop: 2,
+        }}
+      >
+        {when}
+      </div>
     </div>
     <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-      <span className="mono" style={{ fontSize: 16, fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{count}</span>
+      <span
+        className="mono"
+        style={{
+          fontSize: 16,
+          fontWeight: 500,
+          fontVariantNumeric: 'tabular-nums',
+        }}
+      >
+        {count}
+      </span>
       <Icon name="arrow" size={12} />
     </div>
   </div>
 )
 
 interface GoalRowProps {
-  label: string;
-  value: number;
-  max: number;
-  unit?: string;
+  label: string
+  value: number
+  max: number
+  unit?: string
 }
 
-const GoalRow = ({
-  label, value, max, unit = '',
-}: GoalRowProps) => {
+const GoalRow = ({ label, value, max, unit = '' }: GoalRowProps) => {
   const pct = Math.min(1, value / max)
   return (
     <div>
-      <div style={{
-        display: 'flex', justifyContent: 'space-between', fontSize: 12, marginBottom: 4,
-      }}
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          fontSize: 12,
+          marginBottom: 4,
+        }}
       >
         <span>{label}</span>
-        <span className="mono" style={{ color: 'var(--fg-muted)', fontSize: 11 }}>
+        <span
+          className="mono"
+          style={{ color: 'var(--fg-muted)', fontSize: 11 }}
+        >
           {value}
-          {unit ? ` ${unit}` : ''}
-          {' '}
-          /
-          {' '}
-          {max}
+          {unit ? ` ${unit}` : ''} /{max}
           {unit ? ` ${unit}` : ''}
         </span>
       </div>
@@ -130,26 +180,44 @@ const GoalRow = ({
 }
 
 interface RecentRowProps {
-  card: FlashCard;
-  status: 'right' | 'wrong';
+  card: FlashCard
+  status: 'right' | 'wrong'
 }
 
 const RecentRow = ({ card, status }: RecentRowProps) => {
   const { tweaks } = useTweaks()
   return (
     <div className="row">
-      <div className="han" style={{ fontSize: 22, color: 'var(--fg)', minWidth: 44 }}>{card[tweaks.script]}</div>
-      <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column', gap: 2,
-      }}
+      <div
+        className="han"
+        style={{ fontSize: 22, color: 'var(--fg)', minWidth: 44 }}
       >
-        {tweaks.toneColor
-          ? <Pinyin pinyin={card.pinyin} tones={card.tones} size={13} />
-          : <span style={{ fontSize: 13 }}>{card.pinyin}</span>}
-        <span style={{ fontSize: 11.5, color: 'var(--fg-muted)' }}>{card.meaning}</span>
+        {card[tweaks.script]}
       </div>
-      <span className="mono" style={{ fontSize: 10, color: 'var(--fg-dim)' }}>{card.deck}</span>
-      <span className="badge" style={{ color: status === 'right' ? 'var(--ok)' : 'var(--bad)' }}>
+      <div
+        style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
+        {tweaks.toneColor ? (
+          <Pinyin pinyin={card.pinyin} tones={card.tones} size={13} />
+        ) : (
+          <span style={{ fontSize: 13 }}>{card.pinyin}</span>
+        )}
+        <span style={{ fontSize: 11.5, color: 'var(--fg-muted)' }}>
+          {card.meaning}
+        </span>
+      </div>
+      <span className="mono" style={{ fontSize: 10, color: 'var(--fg-dim)' }}>
+        {card.deck}
+      </span>
+      <span
+        className="badge"
+        style={{ color: status === 'right' ? 'var(--ok)' : 'var(--bad)' }}
+      >
         {status === 'right' ? '✓' : '✕'}
       </span>
     </div>
@@ -158,7 +226,9 @@ const RecentRow = ({ card, status }: RecentRowProps) => {
 
 const Dashboard = () => {
   const navigate = useNavigate()
-  const [heatmapData, setHeatmapData] = useState<number[]>(new Array(WEEKS * 7).fill(0))
+  const [heatmapData, setHeatmapData] = useState<number[]>(
+    new Array(WEEKS * 7).fill(0),
+  )
   const [totalReviews, setTotalReviews] = useState(0)
   const [activeDays, setActiveDays] = useState(0)
   const [streak, setStreak] = useState(0)
@@ -169,194 +239,311 @@ const Dashboard = () => {
   const [todayCorrect, setTodayCorrect] = useState(0)
   const [decksTodayCount, setDecksTodayCount] = useState(0)
   const [lastReviewedAt, setLastReviewedAt] = useState<string | null>(null)
-  const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
+  const [recentWords, setRecentWords] = useState<
+    (FlashCard & { lastReviewCorrect: boolean | null })[]
+  >([])
   const [decks, setDecks] = useState<DeckInfo[]>([])
-  const [dailyMixWords, setDailyMixWords] = useState<import('../api/client').Word[]>([])
+  const [dailyMixWords, setDailyMixWords] = useState<
+    import('../api/client').Word[]
+  >([])
   const heatmapScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    api.decks().then(({ decks: d }) => setDecks(d)).catch(() => undefined)
+    api
+      .decks()
+      .then(({ decks: d }) => setDecks(d))
+      .catch(() => undefined)
 
-    api.dailyMix().then(({ words: w }) => setDailyMixWords(w)).catch(() => undefined)
+    api
+      .dailyMix()
+      .then(({ words: w }) => setDailyMixWords(w))
+      .catch(() => undefined)
 
-    api.activity().then(({ activity }) => {
-      setHeatmapData(activityToHeatmapData(activity))
-      setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
-      setActiveDays(Object.keys(activity).length)
-      if (heatmapScrollRef.current) {
-        heatmapScrollRef.current.scrollLeft = heatmapScrollRef.current.scrollWidth
-      }
-    }).catch(() => undefined)
+    api
+      .activity()
+      .then(({ activity }) => {
+        setHeatmapData(activityToHeatmapData(activity))
+        setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
+        setActiveDays(Object.keys(activity).length)
+        if (heatmapScrollRef.current) {
+          heatmapScrollRef.current.scrollLeft =
+            heatmapScrollRef.current.scrollWidth
+        }
+      })
+      .catch(() => undefined)
 
-    api.stats().then(({
-      streak: s, learnedCount: l, totalWords: t, todayAccuracy: a, todayCorrect: tc,
-      timeTodaySeconds, decksTodayCount: dtc, lastReviewedAt: lra, recentWords: rw,
-    }) => {
-      setStreak(s)
-      setLearnedCount(l)
-      setTotalWords(t)
-      setTodayAccuracy(a)
-      setTodayCorrect(tc)
-      setTimeTodayMin(Math.round(timeTodaySeconds / 60))
-      setDecksTodayCount(dtc)
-      setLastReviewedAt(lra)
-      setRecentWords(rw)
-    }).catch(() => undefined)
+    api
+      .stats()
+      .then(
+        ({
+          streak: s,
+          learnedCount: l,
+          totalWords: t,
+          todayAccuracy: a,
+          todayCorrect: tc,
+          timeTodaySeconds,
+          decksTodayCount: dtc,
+          lastReviewedAt: lra,
+          recentWords: rw,
+        }) => {
+          setStreak(s)
+          setLearnedCount(l)
+          setTotalWords(t)
+          setTodayAccuracy(a)
+          setTodayCorrect(tc)
+          setTimeTodayMin(Math.round(timeTodaySeconds / 60))
+          setDecksTodayCount(dtc)
+          setLastReviewedAt(lra)
+          setRecentWords(rw)
+        },
+      )
+      .catch(() => undefined)
   }, [])
 
   return (
-  <div style={{ flex: 1, overflowY: 'auto' }}>
-    <div style={{
-      padding: '28px 28px 24px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'flex-end', gap: 24,
-    }}
-    >
-      <div style={{ flex: 1 }}>
-        <div className="sec-label" style={{ marginBottom: 8 }}>
-          {`// ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${greeting()}`}
-        </div>
-        <div style={{
-          fontSize: 28, fontWeight: 600, letterSpacing: '-0.02em', marginBottom: 4,
+    <div style={{ flex: 1, overflowY: 'auto' }}>
+      <div
+        style={{
+          padding: '28px 28px 24px',
+          borderBottom: '1px solid var(--border)',
+          display: 'flex',
+          alignItems: 'flex-end',
+          gap: 24,
         }}
-        >
-          {todayCorrect >= 10 ? "You're doing great! Keep learning!" : (
-            <>
-              You have
-              {' '}
-              <span style={{ color: 'var(--accent)' }}>{10 - todayCorrect}</span>
-              {' '}
-              words to learn today
-            </>
-          )}
-        </div>
-        <div style={{ color: 'var(--fg-muted)', fontSize: 14 }}>
-          {timeTodayMin}
-          {' '}
-          min ·
-          {' '}
-          {decksTodayCount}
-          {' '}
-          {decksTodayCount === 1 ? 'deck' : 'decks'}
-          {' '}
-          · last session
-          {' '}
-          {timeAgo(lastReviewedAt)}
-        </div>
-      </div>
-      <button type="button" className="btn primary" style={{ padding: '14px 20px' }} onClick={() => navigate('/study')}>
-        <Icon name="play" size={12} />
-        {' '}
-        start session
-        <span className="kbd">⏎</span>
-      </button>
-    </div>
-
-    <div className="dash-stats-grid">
-      <StatCell label="current streak" value={String(streak)} unit="days" accent icon="flame" />
-      <StatCell label="words learned" value={String(learnedCount)} unit={`/ ${totalWords}`} />
-      <StatCell label="today's accuracy" value={todayAccuracy !== null ? String(todayAccuracy) : '—'} unit={todayAccuracy !== null ? '%' : ''} />
-      <StatCell label="time today" value={String(timeTodayMin)} unit="min" />
-    </div>
-
-    <div className="dash-main-grid">
-      <div style={{ padding: '20px 28px', borderRight: '1px solid var(--border)' }}>
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14,
-        }}
-        >
-          <div className="sec-label">activity · last 12 months</div>
-          <div className="mono" style={{ fontSize: 10, color: 'var(--fg-muted)' }}>
-            <span style={{ color: 'var(--fg)' }}>{totalReviews}</span>
-            {' '}
-            reviews ·
-            <span style={{ color: 'var(--fg)' }}>{activeDays}</span>
-            {' '}
-            days
+      >
+        <div style={{ flex: 1 }}>
+          <div className="sec-label" style={{ marginBottom: 8 }}>
+            {`// ${new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })} · ${greeting()}`}
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              fontWeight: 600,
+              letterSpacing: '-0.02em',
+              marginBottom: 4,
+            }}
+          >
+            {todayCorrect >= 10 ? (
+              "You're doing great! Keep learning!"
+            ) : (
+              <>
+                You have{' '}
+                <span style={{ color: 'var(--accent)' }}>
+                  {10 - todayCorrect}
+                </span>{' '}
+                words to learn today
+              </>
+            )}
+          </div>
+          <div style={{ color: 'var(--fg-muted)', fontSize: 14 }}>
+            {timeTodayMin} min ·{decksTodayCount}{' '}
+            {decksTodayCount === 1 ? 'deck' : 'decks'} · last session{' '}
+            {timeAgo(lastReviewedAt)}
           </div>
         </div>
-        <div className="heatmap-scroll" ref={heatmapScrollRef}><Heatmap data={heatmapData} /></div>
+        <button
+          type="button"
+          className="btn primary"
+          style={{ padding: '14px 20px' }}
+          onClick={() => navigate('/study')}
+        >
+          <Icon name="play" size={12} /> start session
+          <span className="kbd">⏎</span>
+        </button>
       </div>
 
-      <div style={{ padding: '20px 28px' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>weakest subjects</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {decks
-            .filter((d) => d.learnedCount < d.wordCount)
-            .sort((a, b) => (b.wordCount - b.learnedCount) - (a.wordCount - a.learnedCount))
-            .slice(0, 4)
-            .map((d) => (
-              <DueItem
-                key={d.id}
-                deck={d.name}
-                count={d.wordCount}
-                when={d.learnedCount === 0 ? 'never studied' : `${d.wordCount - d.learnedCount} words remaining`}
-                onClick={() => navigate('/study/session', { state: { deck: d.name } })}
-              />
-            ))}
-        </div>
+      <div className="dash-stats-grid">
+        <StatCell
+          label="current streak"
+          value={String(streak)}
+          unit="days"
+          accent
+          icon="flame"
+        />
+        <StatCell
+          label="words learned"
+          value={String(learnedCount)}
+          unit={`/ ${totalWords}`}
+        />
+        <StatCell
+          label="today's accuracy"
+          value={todayAccuracy !== null ? String(todayAccuracy) : '—'}
+          unit={todayAccuracy !== null ? '%' : ''}
+        />
+        <StatCell label="time today" value={String(timeTodayMin)} unit="min" />
       </div>
-    </div>
 
-    <div className="dash-lower-grid">
-      <div style={{ padding: '20px 28px', borderRight: '1px solid var(--border)' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>daily mix</div>
+      <div className="dash-main-grid">
         <div
-          className="card"
-          role="button"
-          tabIndex={0}
-          onClick={() => navigate('/study/session', { state: { words: dailyMixWords } })}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/study/session', { state: { words: dailyMixWords } })}
-          style={{ padding: 18, cursor: 'pointer' }}
+          style={{
+            padding: '20px 28px',
+            borderRight: '1px solid var(--border)',
+          }}
         >
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 14,
-          }}
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              marginBottom: 14,
+            }}
           >
-            <div>
-              <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 2 }}>Daily Mix</div>
-              <div className="mono" style={{ fontSize: 11, color: 'var(--fg-muted)' }}>
-                {dailyMixWords.length}
-                {' '}
-                cards · weak &amp; unseen
-              </div>
+            <div className="sec-label">activity · last 12 months</div>
+            <div
+              className="mono"
+              style={{ fontSize: 10, color: 'var(--fg-muted)' }}
+            >
+              <span style={{ color: 'var(--fg)' }}>{totalReviews}</span> reviews
+              ·<span style={{ color: 'var(--fg)' }}>{activeDays}</span> days
             </div>
-            <span className="badge" style={{ color: 'var(--accent)' }}>recommended</span>
           </div>
-          <ProgressBar value={Math.min(todayCorrect, 20) / 20} />
-          <div style={{
-            display: 'flex', justifyContent: 'space-between', marginTop: 8, fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--fg-dim)',
-          }}
-          >
-            <span>
-              {Math.round(Math.min(todayCorrect, 20) / 20 * 100)}
-              % complete
-            </span>
-            <span>
-              {Math.min(todayCorrect, 20)}
-              {' '}
-              / 20
-            </span>
+          <div className="heatmap-scroll" ref={heatmapScrollRef}>
+            <Heatmap data={heatmapData} />
           </div>
         </div>
 
-        <div className="sec-label" style={{ margin: '20px 0 10px' }}>daily goals</div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <GoalRow label="10 min / day" value={Math.min(timeTodayMin, 10)} max={10} unit="min" />
-          <GoalRow label="10 words / day" value={Math.min(todayCorrect, 10)} max={10} />
+        <div style={{ padding: '20px 28px' }}>
+          <div className="sec-label" style={{ marginBottom: 14 }}>
+            weakest subjects
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {decks
+              .filter((d) => d.learnedCount < d.wordCount)
+              .sort(
+                (a, b) =>
+                  b.wordCount - b.learnedCount - (a.wordCount - a.learnedCount),
+              )
+              .slice(0, 4)
+              .map((d) => (
+                <DueItem
+                  key={d.id}
+                  deck={d.name}
+                  count={d.wordCount}
+                  when={
+                    d.learnedCount === 0
+                      ? 'never studied'
+                      : `${d.wordCount - d.learnedCount} words remaining`
+                  }
+                  onClick={() =>
+                    navigate('/study/session', { state: { deck: d.name } })
+                  }
+                />
+              ))}
+          </div>
         </div>
       </div>
 
-      <div style={{ padding: '20px 28px' }}>
-        <div className="sec-label" style={{ marginBottom: 14 }}>last reviewed</div>
-        <div className="card">
-          {recentWords.length === 0
-            ? <div className="mono" style={{ fontSize: 11, color: 'var(--fg-dim)', padding: '14px 16px' }}>no reviews yet</div>
-            : recentWords.map((w) => (
-              <RecentRow key={`${w.simplified}-${w.deck}`} card={w} status={w.lastReviewCorrect ? 'right' : 'wrong'} />
-            ))}
+      <div className="dash-lower-grid">
+        <div
+          style={{
+            padding: '20px 28px',
+            borderRight: '1px solid var(--border)',
+          }}
+        >
+          <div className="sec-label" style={{ marginBottom: 14 }}>
+            daily mix
+          </div>
+          <div
+            className="card"
+            role="button"
+            tabIndex={0}
+            onClick={() =>
+              navigate('/study/session', { state: { words: dailyMixWords } })
+            }
+            onKeyDown={(e) =>
+              e.key === 'Enter' &&
+              navigate('/study/session', { state: { words: dailyMixWords } })
+            }
+            style={{ padding: 18, cursor: 'pointer' }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: 14,
+              }}
+            >
+              <div>
+                <div style={{ fontSize: 17, fontWeight: 600, marginBottom: 2 }}>
+                  Daily Mix
+                </div>
+                <div
+                  className="mono"
+                  style={{ fontSize: 11, color: 'var(--fg-muted)' }}
+                >
+                  {dailyMixWords.length} cards · weak &amp; unseen
+                </div>
+              </div>
+              <span className="badge" style={{ color: 'var(--accent)' }}>
+                recommended
+              </span>
+            </div>
+            <ProgressBar value={Math.min(todayCorrect, 20) / 20} />
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: 8,
+                fontFamily: 'var(--font-mono)',
+                fontSize: 10.5,
+                color: 'var(--fg-dim)',
+              }}
+            >
+              <span>
+                {Math.round((Math.min(todayCorrect, 20) / 20) * 100)}% complete
+              </span>
+              <span>{Math.min(todayCorrect, 20)} / 20</span>
+            </div>
+          </div>
+
+          <div className="sec-label" style={{ margin: '20px 0 10px' }}>
+            daily goals
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <GoalRow
+              label="10 min / day"
+              value={Math.min(timeTodayMin, 10)}
+              max={10}
+              unit="min"
+            />
+            <GoalRow
+              label="10 words / day"
+              value={Math.min(todayCorrect, 10)}
+              max={10}
+            />
+          </div>
+        </div>
+
+        <div style={{ padding: '20px 28px' }}>
+          <div className="sec-label" style={{ marginBottom: 14 }}>
+            last reviewed
+          </div>
+          <div className="card">
+            {recentWords.length === 0 ? (
+              <div
+                className="mono"
+                style={{
+                  fontSize: 11,
+                  color: 'var(--fg-dim)',
+                  padding: '14px 16px',
+                }}
+              >
+                no reviews yet
+              </div>
+            ) : (
+              recentWords.map((w) => (
+                <RecentRow
+                  key={`${w.simplified}-${w.deck}`}
+                  card={w}
+                  status={w.lastReviewCorrect ? 'right' : 'wrong'}
+                />
+              ))
+            )}
+          </div>
         </div>
       </div>
     </div>
-  </div>
   )
 }
 
