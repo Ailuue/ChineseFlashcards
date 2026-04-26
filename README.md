@@ -1,5 +1,7 @@
 # hanzi.repeat
 
+[https://hanzirepeat.vercel.app/](Study completely free here)
+
 A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
 
 <img width="2295" height="1030" alt="Screenshot 2026-04-23 at 2 01 26 PM" src="https://github.com/user-attachments/assets/c7d3d1cb-529f-4596-b5f8-163d6341ca85" />
@@ -32,14 +34,14 @@ npm start
 
 Runs the app at `http://localhost:5173`.
 
-| Command             | Description                          |
-| ------------------- | ------------------------------------ |
-| `npm start`         | Start the dev server                 |
-| `npm run build`     | Type-check and build for production  |
-| `npm run preview`   | Preview the production build locally |
-| `npm run lint`      | Lint all `.ts` / `.tsx` files        |
-| `npm test`          | Run unit tests once                  |
-| `npm run test:watch`| Run unit tests in watch mode         |
+| Command              | Description                          |
+| -------------------- | ------------------------------------ |
+| `npm start`          | Start the dev server                 |
+| `npm run build`      | Type-check and build for production  |
+| `npm run preview`    | Preview the production build locally |
+| `npm run lint`       | Lint all `.ts` / `.tsx` files        |
+| `npm test`           | Run unit tests once                  |
+| `npm run test:watch` | Run unit tests in watch mode         |
 
 ### Backend
 
@@ -69,24 +71,24 @@ Runs the API at `http://localhost:3001`.
 
 ### Environment variables (server)
 
-| Variable         | Required | Default                     |
-| ---------------- | -------- | --------------------------- |
-| `DATABASE_URL`   | Yes      | —                           |
-| `JWT_SECRET`     | Yes      | —                           |
-| `PORT`           | No       | `3001`                      |
-| `ALLOWED_ORIGIN` | No       | `http://localhost:5173`     |
+| Variable         | Required | Default                 |
+| ---------------- | -------- | ----------------------- |
+| `DATABASE_URL`   | Yes      | —                       |
+| `JWT_SECRET`     | Yes      | —                       |
+| `PORT`           | No       | `3001`                  |
+| `ALLOWED_ORIGIN` | No       | `http://localhost:5173` |
 
 Frontend uses `VITE_API_URL` (defaults to `http://localhost:3001`).
 
 ## Screens
 
-| Route           | Screen                                                                   |
-| --------------- | ------------------------------------------------------------------------ |
-| `/`             | Dashboard — greeting, streak, activity heatmap, daily mix, goals         |
-| `/study`        | Study setup — configure session count or pick a deck                     |
-| `/study/session`| Study mode — flip cards, rate with SM-2 spaced repetition                |
-| `/decks`        | Deck browser — all HSK decks with per-deck progress                      |
-| `/stats`        | Stats — 30-day KPIs, accuracy trend chart, tone breakdown, top struggles |
+| Route            | Screen                                                                   |
+| ---------------- | ------------------------------------------------------------------------ |
+| `/`              | Dashboard — greeting, streak, activity heatmap, daily mix, goals         |
+| `/study`         | Study setup — configure session count or pick a deck                     |
+| `/study/session` | Study mode — flip cards, rate with SM-2 spaced repetition                |
+| `/decks`         | Deck browser — all HSK decks with per-deck progress                      |
+| `/stats`         | Stats — 30-day KPIs, accuracy trend chart, tone breakdown, top struggles |
 
 ## Study Mode
 
@@ -102,28 +104,28 @@ Wrong cards are requeued two positions ahead. A streak of 3+ correct answers tri
 
 All authenticated routes require `Authorization: Bearer <token>`.
 
-| Method | Path                                   | Auth | Description                              |
-| ------ | -------------------------------------- | ---- | ---------------------------------------- |
-| `GET`  | `/health`                              | —    | Health check                             |
-| `POST` | `/api/auth/register`                   | —    | Create account                           |
-| `POST` | `/api/auth/login`                      | —    | Get JWT                                  |
-| `GET`  | `/api/auth/me`                         | ✓    | Current user                             |
-| `GET`  | `/api/words`                           | —    | List words (`?deck=Verbs&q=你`)          |
-| `GET`  | `/api/words/:id`                       | —    | Single word                              |
-| `GET`  | `/api/decks`                           | —    | All decks with word + learned counts     |
-| `GET`  | `/api/decks/:id`                       | —    | Deck with its words                      |
-| `GET`  | `/api/progress/activity`               | ✓    | Daily review counts for last 53 weeks    |
-| `GET`  | `/api/progress/stats`                  | ✓    | Dashboard stats (streak, accuracy, time) |
-| `GET`  | `/api/progress/stats30`                | ✓    | 30-day KPIs for stats screen             |
-| `GET`  | `/api/progress/session`                | ✓    | Due + new words for a study session      |
-| `GET`  | `/api/progress/daily-mix`              | ✓    | 20 weak/unseen words                     |
-| `GET`  | `/api/progress/accuracy-trend`         | ✓    | Daily accuracy % for last 30 days        |
-| `GET`  | `/api/progress/tone-accuracy`          | ✓    | Accuracy broken down by tone             |
-| `GET`  | `/api/progress/top-struggles`          | ✓    | 10 words with highest 30-day lapse rate  |
-| `GET`  | `/api/progress/due`                    | ✓    | Words due for review now                 |
-| `POST` | `/api/progress/:wordId/review`         | ✓    | Record review (`{ correct: bool }`)      |
-| `POST` | `/api/sessions`                        | ✓    | Start a study session                    |
-| `PATCH`| `/api/sessions/:id/end`                | ✓    | End a study session                      |
+| Method  | Path                           | Auth | Description                              |
+| ------- | ------------------------------ | ---- | ---------------------------------------- |
+| `GET`   | `/health`                      | —    | Health check                             |
+| `POST`  | `/api/auth/register`           | —    | Create account                           |
+| `POST`  | `/api/auth/login`              | —    | Get JWT                                  |
+| `GET`   | `/api/auth/me`                 | ✓    | Current user                             |
+| `GET`   | `/api/words`                   | —    | List words (`?deck=Verbs&q=你`)          |
+| `GET`   | `/api/words/:id`               | —    | Single word                              |
+| `GET`   | `/api/decks`                   | —    | All decks with word + learned counts     |
+| `GET`   | `/api/decks/:id`               | —    | Deck with its words                      |
+| `GET`   | `/api/progress/activity`       | ✓    | Daily review counts for last 53 weeks    |
+| `GET`   | `/api/progress/stats`          | ✓    | Dashboard stats (streak, accuracy, time) |
+| `GET`   | `/api/progress/stats30`        | ✓    | 30-day KPIs for stats screen             |
+| `GET`   | `/api/progress/session`        | ✓    | Due + new words for a study session      |
+| `GET`   | `/api/progress/daily-mix`      | ✓    | 20 weak/unseen words                     |
+| `GET`   | `/api/progress/accuracy-trend` | ✓    | Daily accuracy % for last 30 days        |
+| `GET`   | `/api/progress/tone-accuracy`  | ✓    | Accuracy broken down by tone             |
+| `GET`   | `/api/progress/top-struggles`  | ✓    | 10 words with highest 30-day lapse rate  |
+| `GET`   | `/api/progress/due`            | ✓    | Words due for review now                 |
+| `POST`  | `/api/progress/:wordId/review` | ✓    | Record review (`{ correct: bool }`)      |
+| `POST`  | `/api/sessions`                | ✓    | Start a study session                    |
+| `PATCH` | `/api/sessions/:id/end`        | ✓    | End a study session                      |
 
 ## Project Structure
 
