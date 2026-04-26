@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
 import type { FlashCard } from '../types'
@@ -172,6 +172,7 @@ const Dashboard = () => {
   const [recentWords, setRecentWords] = useState<(FlashCard & { lastReviewCorrect: boolean | null })[]>([])
   const [decks, setDecks] = useState<DeckInfo[]>([])
   const [dailyMixWords, setDailyMixWords] = useState<import('../api/client').Word[]>([])
+  const heatmapScrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     api.decks().then(({ decks: d }) => setDecks(d)).catch(() => undefined)
@@ -182,6 +183,9 @@ const Dashboard = () => {
       setHeatmapData(activityToHeatmapData(activity))
       setTotalReviews(Object.values(activity).reduce((s, n) => s + n, 0))
       setActiveDays(Object.keys(activity).length)
+      if (heatmapScrollRef.current) {
+        heatmapScrollRef.current.scrollLeft = heatmapScrollRef.current.scrollWidth
+      }
     }).catch(() => undefined)
 
     api.stats().then(({
@@ -269,7 +273,7 @@ const Dashboard = () => {
             days
           </div>
         </div>
-        <div className="heatmap-scroll"><Heatmap data={heatmapData} /></div>
+        <div className="heatmap-scroll" ref={heatmapScrollRef}><Heatmap data={heatmapData} /></div>
       </div>
 
       <div style={{ padding: '20px 28px' }}>
