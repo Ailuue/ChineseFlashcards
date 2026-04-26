@@ -19,7 +19,7 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 const StudyScreen = () => {
-  const { tweaks, toggleScript } = useTweaks()
+  const { tweaks } = useTweaks()
   const location = useLocation()
   const sessionIdRef = useRef<number | null>(null)
 
@@ -293,35 +293,6 @@ const StudyScreen = () => {
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
             <Icon name="flame" size={11} /> {streak} streak
           </span>
-          <button
-            type="button"
-            className="btn ghost"
-            onClick={toggleScript}
-            style={{ padding: '3px 8px', fontSize: 11, gap: 4 }}
-            title={`switch to ${tweaks.script === 'simplified' ? 'traditional' : 'simplified'}`}
-          >
-            <span
-              style={{
-                color:
-                  tweaks.script === 'simplified'
-                    ? 'var(--fg)'
-                    : 'var(--fg-dim)',
-              }}
-            >
-              简
-            </span>
-            {' · '}
-            <span
-              style={{
-                color:
-                  tweaks.script === 'traditional'
-                    ? 'var(--fg)'
-                    : 'var(--fg-dim)',
-              }}
-            >
-              繁
-            </span>
-          </button>
         </div>
       </div>
 
