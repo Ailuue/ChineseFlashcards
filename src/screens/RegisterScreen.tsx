@@ -157,6 +157,7 @@ const RegisterScreen = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
+    if (!username && !password) return
     setTouched({ username: true, password: true })
     if (!canSubmit) return
     setSubmitting(true)
