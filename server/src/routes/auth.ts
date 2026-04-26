@@ -1,6 +1,6 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
-import { eq } from 'drizzle-orm'
+import { eq, count } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { users } from '../db/schema'
@@ -28,16 +28,29 @@ router.post('/register', async (req, res) => {
 
   const { username, password } = parsed.data
 
-  const existing = await db.query.users.findFirst({ where: eq(users.username, username) })
+  const ip = req.ip ?? null
+
+  const [existing, [ipCount]] = await Promise.all([
+    db.query.users.findFirst({ where: eq(users.username, username) }),
+    ip
+      ? db.select({ n: count() }).from(users).where(eq(users.registeredFromIp, ip))
+      : Promise.resolve([{ n: 0 }]),
+  ])
+
   if (existing) {
     res.status(409).json({ error: 'Username already taken' })
+    return
+  }
+
+  if ((ipCount?.n ?? 0) >= 2) {
+    res.status(429).json({ error: 'Account creation limit reached for this network' })
     return
   }
 
   const passwordHash = await bcrypt.hash(password, 12)
   const [user] = await db
     .insert(users)
-    .values({ username, passwordHash })
+    .values({ username, passwordHash, registeredFromIp: ip })
     .returning({ id: users.id, username: users.username })
 
   const token = signToken({ userId: user.id, username: user.username })
