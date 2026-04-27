@@ -2,6 +2,8 @@ import 'dotenv/config'
 import { db } from './index'
 import { decks, words } from './schema'
 import { HSK3_DECK, HSK3_WORDS } from './hsk3-data'
+import { HSK4_DECK, HSK4_WORDS } from './hsk4-data'
+import { HSK5_DECK, HSK5_WORDS } from './hsk5-data'
 
 const HSK1_DECK = [
   { name: 'Greetings', description: 'Greetings, farewells, and polite expressions', level: 'HSK1' },
@@ -999,8 +1001,8 @@ const HSK2_WORDS = [
 async function seed() {
   console.log('Seeding database…')
 
-  // Upsert all decks (HSK1 + HSK2 + HSK3)
-  const allDecks = [...HSK1_DECK, ...HSK2_DECK, ...HSK3_DECK]
+  // Upsert all decks (HSK1 + HSK2 + HSK3 + HSK4)
+  const allDecks = [...HSK1_DECK, ...HSK2_DECK, ...HSK3_DECK, ...HSK4_DECK, ...HSK5_DECK]
   const insertedDecks = await db
     .insert(decks)
     .values(allDecks)
@@ -1011,7 +1013,7 @@ async function seed() {
 
   // Deduplicate by simplified form before inserting (across all word lists)
   const seen = new Set<string>()
-  const allWords = [...HSK1_WORDS, ...HSK2_WORDS, ...HSK3_WORDS]
+  const allWords = [...HSK1_WORDS, ...HSK2_WORDS, ...HSK3_WORDS, ...HSK4_WORDS, ...HSK5_WORDS]
   const wordRows = allWords
     .filter((w) => {
       if (seen.has(w.simplified)) return false
