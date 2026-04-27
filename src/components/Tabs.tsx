@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import Icon from './Icon'
 import { useTweaks } from '../context/TweaksContext'
+import { useAuth } from '../context/AuthContext'
 
 interface TabDef {
   to: string;
@@ -27,6 +28,7 @@ const TAB_LIST: TabDef[] = [
 
 const Tabs = () => {
   const { tweaks, toggleScript } = useTweaks()
+  const { logout } = useAuth()
   return (
     <div className="tabs">
       {TAB_LIST.map((t) => (
@@ -51,6 +53,14 @@ const Tabs = () => {
         <span style={{ color: tweaks.script === 'simplified' ? 'var(--fg)' : 'var(--fg-dim)' }}>简</span>
         <span style={{ color: 'var(--fg-dim)', fontSize: '0.6em' }}>·</span>
         <span style={{ color: tweaks.script === 'traditional' ? 'var(--fg)' : 'var(--fg-dim)' }}>繁</span>
+      </button>
+      <button
+        type="button"
+        className="script-toggle tabs-mobile-only"
+        onClick={logout}
+        title="sign out"
+      >
+        <Icon name="x" size={12} />
       </button>
     </div>
   )

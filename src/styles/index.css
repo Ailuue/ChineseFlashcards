@@ -501,6 +501,7 @@ body.theme-dark {
 
 /* Topbar cells hidden on mobile */
 .topbar-desktop { display: none !important; }
+.tabs-mobile-only { display: flex !important; }
 
 /* Tabs: icon + label */
 .tab-icon { display: flex; align-items: center; }
@@ -647,6 +648,7 @@ body.theme-dark {
 
   /* Topbar desktop cells */
   .topbar-desktop { display: flex !important; }
+  .tabs-mobile-only { display: none !important; }
 
   /* Study */
   .card-stage-outer { padding: 32px; flex-direction: row; }
