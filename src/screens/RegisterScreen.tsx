@@ -104,7 +104,15 @@ const Field = ({
             letterSpacing: type === 'password' ? '0.15em' : 0,
           }}
         />
-        {error && <Icon name="x" size={13} />}
+        {error && (
+          <button
+            type="button"
+            onClick={() => onChange('')}
+            style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', color: 'var(--fg-dim)' }}
+          >
+            <Icon name="x" size={13} />
+          </button>
+        )}
       </div>
       {error && (
         <div
@@ -139,6 +147,7 @@ const RegisterScreen = () => {
     if (!touched.username) return null
     if (!username) return 'username is required'
     if (username.length < 3) return 'must be at least 3 characters'
+    if (username.length > 16) return 'must be 16 characters or fewer'
     if (!/^[a-zA-Z0-9_]+$/.test(username)) return 'letters, numbers, underscore only'
     if (TAKEN_PREVIEW.includes(username.toLowerCase())) return `"${username}" is already taken`
     return null
@@ -158,7 +167,7 @@ const RegisterScreen = () => {
   if (strength <= 1) strengthColor = 'var(--bad)'
   else if (strength <= 2) strengthColor = 'var(--warn)'
 
-  const canSubmit = username.length >= 3 && password.length >= 8 && password.length <= 128 && !userError && !pwError
+  const canSubmit = username.length >= 3 && username.length <= 16 && password.length >= 8 && password.length <= 128 && !userError && !pwError
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()

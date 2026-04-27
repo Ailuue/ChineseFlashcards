@@ -9,7 +9,7 @@ import { requireAuth, signToken } from '../middleware/auth'
 const router = Router()
 
 const RegisterSchema = z.object({
-  username: z.string().min(3).max(50).regex(/^[a-zA-Z0-9_]+$/, 'letters, numbers, underscore only'),
+  username: z.string().min(3).max(16).regex(/^[a-zA-Z0-9_]+$/, 'letters, numbers, underscore only'),
   password: z.string().min(8).max(128),
 })
 

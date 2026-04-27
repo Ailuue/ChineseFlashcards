@@ -34,7 +34,7 @@ const Topbar = ({ context = '' }: TopbarProps) => {
       {context && <div className="cell muted topbar-desktop">{context}</div>}
       <div
         className="cell right muted"
-        style={{ cursor: 'pointer' }}
+        style={{ cursor: 'pointer', justifyContent: 'center' }}
         onClick={toggleTheme}
         role="button"
         tabIndex={0}
@@ -45,7 +45,7 @@ const Topbar = ({ context = '' }: TopbarProps) => {
         <span>{tweaks.theme === 'dark' ? 'light' : 'dark'}</span>
       </div>
       <div
-        className="cell right muted topbar-desktop"
+        className="cell topbar-user muted"
         style={{ cursor: 'pointer' }}
         onClick={handleAuthClick}
         role="button"

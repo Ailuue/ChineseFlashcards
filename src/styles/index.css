@@ -126,6 +126,7 @@ body.theme-dark {
 
 .topbar .cell.muted { color: var(--fg-dim); }
 .topbar .cell.right { margin-left: auto; border-right: none; border-left: 1px solid var(--border); }
+.topbar .topbar-user { border-left: 1px solid var(--border); border-right: none; max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; line-height: 44px; }
 .topbar .logo { font-weight: 600; color: var(--fg); letter-spacing: 0.04em; }
 .topbar .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--ok); }
 
@@ -501,7 +502,6 @@ body.theme-dark {
 
 /* Topbar cells hidden on mobile */
 .topbar-desktop { display: none !important; }
-.tabs-mobile-only { display: flex !important; }
 
 /* Tabs: icon + label */
 .tab-icon { display: flex; align-items: center; }
@@ -648,7 +648,6 @@ body.theme-dark {
 
   /* Topbar desktop cells */
   .topbar-desktop { display: flex !important; }
-  .tabs-mobile-only { display: none !important; }
 
   /* Study */
   .card-stage-outer { padding: 32px; flex-direction: row; }
