@@ -4,6 +4,7 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
   const token = localStorage.getItem('token')
   const res = await fetch(`${BASE}${path}`, {
     ...options,
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
