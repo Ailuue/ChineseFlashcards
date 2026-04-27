@@ -31,8 +31,9 @@ router.post('/register', async (req, res) => {
   }
 
   const { username, password } = parsed.data
-  const isProd = process.env.NODE_ENV === 'production'
-  const ip = isProd ? (req.ip ?? null) : null
+  const rawIp = process.env.NODE_ENV !== 'development' ? (req.ip ?? null) : null
+  const whitelist = (process.env.WHITELISTED_IPS ?? '').split(',').map((s) => s.trim()).filter(Boolean)
+  const ip = rawIp && whitelist.includes(rawIp) ? null : rawIp
 
   try {
     const [existing, [ipCount]] = await Promise.all([
