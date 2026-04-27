@@ -1,6 +1,6 @@
 # hanzi.repeat
 
-[https://hanzirepeat.vercel.app/](Study completely free here)
+[Study completely free here](https://hanzirepeat.vercel.app/)
 
 A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfolio piece demonstrating React, TypeScript, and modern CSS.
 
