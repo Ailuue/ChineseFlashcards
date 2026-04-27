@@ -3,6 +3,7 @@ import {
 } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useTweaks } from '../context/TweaksContext'
+import { useAuth } from '../context/AuthContext'
 import type { SessionCard } from '../types'
 import { api, type Word } from '../api/client'
 import Icon from '../components/Icon'
@@ -20,6 +21,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 const StudyScreen = () => {
   const { tweaks } = useTweaks()
+  const { applySession } = useAuth()
   const location = useLocation()
   const sessionIdRef = useRef<number | null>(null)
 
@@ -46,6 +48,7 @@ const StudyScreen = () => {
   const [wrong, setWrong] = useState(0)
   const [streak, setStreak] = useState(0)
   const [celebrate, setCelebrate] = useState<{ t: number } | null>(null)
+  const [levelUpData, setLevelUpData] = useState<{ newLevel: number } | null>(null)
   const [done, setDone] = useState(false)
 
   useEffect(() => {
@@ -95,7 +98,12 @@ const StudyScreen = () => {
     (got: boolean) => {
       const wordId = queue[0]?.id
       if (wordId != null) {
-        api.recordReview(wordId, got).catch(() => undefined)
+        api.recordReview(wordId, got).then((res) => {
+          if (res.levelUp) {
+            applySession(res.levelUp.user, res.levelUp.token)
+            setLevelUpData({ newLevel: res.levelUp.newLevel })
+          }
+        }).catch(() => undefined)
       }
 
       setReviewed((n) => n + 1)
@@ -155,6 +163,50 @@ const StudyScreen = () => {
     const t = setTimeout(() => setCelebrate(null), 900)
     return () => clearTimeout(t)
   }, [celebrate])
+
+  useEffect(() => {
+    if (!levelUpData) return undefined
+    const t = setTimeout(() => setLevelUpData(null), 5000)
+    return () => clearTimeout(t)
+  }, [levelUpData])
+
+  const levelUpBanner = levelUpData && (
+    <div
+      style={{
+        position: 'fixed',
+        top: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 100,
+        background: 'var(--accent)',
+        color: '#fff',
+        borderRadius: 4,
+        padding: '10px 20px',
+        fontFamily: 'var(--font-mono)',
+        fontSize: 12,
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        display: 'flex',
+        alignItems: 'center',
+        gap: 10,
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span>★</span>
+      {`HSK ${levelUpData.newLevel} unlocked — level up!`}
+      <button
+        type="button"
+        onClick={() => setLevelUpData(null)}
+        style={{
+          background: 'none', border: 'none', color: 'inherit', cursor: 'pointer',
+          padding: 0, marginLeft: 4, fontSize: 14, lineHeight: 1,
+        }}
+      >
+        ×
+      </button>
+    </div>
+  )
 
   if (!loadedCards && !loadError) {
     return (
@@ -235,6 +287,7 @@ const StudyScreen = () => {
         overflow: 'hidden',
       }}
     >
+      {levelUpBanner}
       {/* Progress bar + session stats */}
       <div
         style={{

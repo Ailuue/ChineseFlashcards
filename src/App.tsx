@@ -11,6 +11,7 @@ import DeckBrowser from './screens/DeckBrowser'
 import StatsScreen from './screens/StatsScreen'
 import LoginScreen from './screens/LoginScreen'
 import RegisterScreen from './screens/RegisterScreen'
+import OnboardingScreen from './screens/OnboardingScreen'
 
 const RequireAuth = ({ children }: { children: React.ReactNode }) => {
   const { isAuthenticated } = useAuth()
@@ -25,6 +26,7 @@ const App = () => (
         <Routes>
           <Route path="login" element={<LoginScreen />} />
           <Route path="register" element={<RegisterScreen />} />
+          <Route path="onboarding" element={<RequireAuth><OnboardingScreen /></RequireAuth>} />
           <Route element={<RequireAuth><Layout /></RequireAuth>}>
             <Route index element={<Dashboard />} />
             <Route path="study" element={<StudySetupScreen />} />

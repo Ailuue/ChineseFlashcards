@@ -36,6 +36,20 @@
       "when": 1777181093177,
       "tag": "0004_flashy_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1777181549174,
+      "tag": "0005_premium_echo",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1777205329735,
+      "tag": "0006_supreme_deadpool",
+      "breakpoints": true
     }
   ]
 }

@@ -739,8 +739,37 @@ body.theme-dark {
   color: var(--fg-muted);
 }
 
+.onboarding-form { max-width: 480px; }
+
+.hsk-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hsk-card {
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  border-radius: 3px;
+  padding: 12px 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color .12s, background .12s;
+  color: var(--fg);
+}
+
+.hsk-card:hover { border-color: var(--fg-dim); }
+
+.hsk-card.selected {
+  border-color: var(--accent);
+  background: var(--bg-elev);
+}
+
 @media (min-width: 768px) {
   .auth-topbar { padding: 14px 28px; }
   .auth-form { max-width: 400px; gap: 20px; }
+  .onboarding-form { max-width: 480px; }
   .auth-center { padding: 40px; }
+  .hsk-grid { gap: 10px; }
+  .hsk-card { padding: 14px 16px; }
 }

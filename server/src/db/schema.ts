@@ -16,6 +16,7 @@ export const users = pgTable('users', {
   username: varchar('username', { length: 50 }).notNull().unique(),
   passwordHash: varchar('password_hash', { length: 255 }).notNull(),
   registeredFromIp: varchar('registered_from_ip', { length: 45 }),
+  hskLevel: integer('hsk_level').default(1).notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -40,7 +41,9 @@ export const words = pgTable('words', {
     .references(() => decks.id, { onDelete: 'cascade' })
     .notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-})
+}, (t) => ({
+  simplifiedUnique: unique().on(t.simplified),
+}))
 
 // SM-2 spaced repetition data per user per word
 export const userProgress = pgTable('user_progress', {

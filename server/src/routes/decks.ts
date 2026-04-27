@@ -1,8 +1,9 @@
 import { Router } from 'express'
-import { eq, and, count, sql } from 'drizzle-orm'
+import { eq, and, count, sql, inArray } from 'drizzle-orm'
 import { db } from '../db'
 import { decks, words, userProgress } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { allowedLevels } from '../utils/level'
 
 const router = Router()
 router.use(requireAuth)
@@ -25,6 +26,7 @@ router.get('/', async (req, res) => {
     .from(decks)
     .leftJoin(words, eq(words.deckId, decks.id))
     .leftJoin(userProgress, and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)))
+    .where(inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1)))
     .groupBy(decks.id)
     .orderBy(decks.id)
 

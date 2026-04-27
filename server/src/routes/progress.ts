@@ -1,11 +1,12 @@
 import { Router } from 'express'
-import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql, or } from 'drizzle-orm'
+import { eq, and, lte, isNull, isNotNull, gte, gt, desc, count, sql, or, inArray } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
-import { userProgress, words, decks, studySessions, reviewEvents } from '../db/schema'
-import { requireAuth } from '../middleware/auth'
+import { userProgress, words, decks, studySessions, reviewEvents, users } from '../db/schema'
+import { requireAuth, signToken } from '../middleware/auth'
 import { nextReviewSchedule } from '../utils/srs'
 import { shuffle } from '../utils/shuffle'
+import { allowedLevels } from '../utils/level'
 
 const router = Router()
 router.use(requireAuth)
@@ -58,14 +59,22 @@ router.get('/stats', async (req, res) => {
       .from(userProgress)
       .where(and(eq(userProgress.userId, userId), isNotNull(userProgress.lastReviewed))),
 
-    // Words the user has gotten right at least once
+    // Words the user has gotten right at least once, within their allowed levels
     db
       .select({ learned: count() })
       .from(userProgress)
-      .where(and(eq(userProgress.userId, userId), gt(userProgress.correct, 0))),
+      .innerJoin(words, eq(words.id, userProgress.wordId))
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(and(
+        eq(userProgress.userId, userId),
+        gt(userProgress.correct, 0),
+        inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1)),
+      )),
 
-    // Total words in the system
-    db.select({ total: count() }).from(words),
+    // Total words available at the user's level
+    db.select({ total: count() }).from(words)
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1))),
 
     // All review events today (each attempt counts)
     db
@@ -233,9 +242,12 @@ router.get('/daily-mix', async (req, res) => {
       userProgress,
       and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)),
     )
-    .where(or(
-      isNull(userProgress.id),
-      eq(userProgress.lastReviewCorrect, false),
+    .where(and(
+      inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1)),
+      or(
+        isNull(userProgress.id),
+        eq(userProgress.lastReviewCorrect, false),
+      ),
     ))
 
   res.json({ words: shuffle(pool).slice(0, 20) })
@@ -278,6 +290,7 @@ router.get('/due', async (req, res) => {
       and(
         eq(userProgress.userId, req.user!.userId),
         lte(userProgress.nextReview, now),
+        inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1)),
       ),
     )
     .orderBy(userProgress.nextReview)
@@ -310,6 +323,7 @@ router.get('/session', async (req, res) => {
 
   const { count } = parsed.data
   const { userId } = req.user!
+  const allowed = allowedLevels(req.user!.hskLevel ?? 1)
   const now = new Date()
 
   const [dueWords, newWords] = await Promise.all([
@@ -319,7 +333,11 @@ router.get('/session', async (req, res) => {
       .from(userProgress)
       .innerJoin(words, eq(words.id, userProgress.wordId))
       .innerJoin(decks, eq(decks.id, words.deckId))
-      .where(and(eq(userProgress.userId, userId), lte(userProgress.nextReview, now))),
+      .where(and(
+        eq(userProgress.userId, userId),
+        lte(userProgress.nextReview, now),
+        inArray(decks.level, allowed),
+      )),
 
     // Words the user has never seen (no progress row)
     db
@@ -330,7 +348,7 @@ router.get('/session', async (req, res) => {
         userProgress,
         and(eq(userProgress.wordId, words.id), eq(userProgress.userId, userId)),
       )
-      .where(isNull(userProgress.id)),
+      .where(and(isNull(userProgress.id), inArray(decks.level, allowed))),
   ])
 
   const pool = [...shuffle(dueWords), ...shuffle(newWords)].slice(0, count)
@@ -392,7 +410,53 @@ router.post('/:wordId/review', async (req, res) => {
     db.insert(reviewEvents).values({ userId, wordId, correct }),
   ])
 
-  res.json({ progress: updated })
+  // Level-up check — only on correct answers, only if a next level exists
+  const currentLevel = req.user!.hskLevel ?? 1
+  const nextLevel = currentLevel + 1
+
+  if (!correct || nextLevel > 6) {
+    res.json({ progress: updated })
+    return
+  }
+
+  const currentLevelKey = `HSK${currentLevel}`
+
+  const [[totalRow], [learnedRow]] = await Promise.all([
+    db.select({ n: count() })
+      .from(words)
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(eq(decks.level, currentLevelKey)),
+    db.select({ n: count() })
+      .from(userProgress)
+      .innerJoin(words, eq(words.id, userProgress.wordId))
+      .innerJoin(decks, eq(decks.id, words.deckId))
+      .where(and(
+        eq(userProgress.userId, userId),
+        gt(userProgress.correct, 0),
+        eq(decks.level, currentLevelKey),
+      )),
+  ])
+
+  if ((learnedRow?.n ?? 0) < (totalRow?.n ?? 1)) {
+    res.json({ progress: updated })
+    return
+  }
+
+  // All words at current level learned — conditional UPDATE prevents double-fire
+  const [upgradedUser] = await db
+    .update(users)
+    .set({ hskLevel: nextLevel })
+    .where(and(eq(users.id, userId), eq(users.hskLevel, currentLevel)))
+    .returning({ id: users.id, username: users.username, hskLevel: users.hskLevel })
+
+  if (!upgradedUser) {
+    // Already leveled up via a concurrent request or stale JWT
+    res.json({ progress: updated })
+    return
+  }
+
+  const newToken = signToken({ userId, username: req.user!.username, hskLevel: nextLevel })
+  res.json({ progress: updated, levelUp: { newLevel: nextLevel, user: upgradedUser, token: newToken } })
 })
 
 // GET /api/progress/tone-accuracy — accuracy per tone for reviews in the last 30 days

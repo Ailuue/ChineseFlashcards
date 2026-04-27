@@ -18,6 +18,7 @@ export async function request<T>(path: string, options: RequestInit = {}): Promi
 export interface AuthUser {
   id: number
   username: string
+  hskLevel: number
 }
 
 export interface AuthResponse {
@@ -70,7 +71,10 @@ export const api = {
     `/api/progress/session?count=${count}`,
   ),
 
-  recordReview: (wordId: number, correct: boolean) => request<{ progress: unknown }>(
+  recordReview: (wordId: number, correct: boolean) => request<{
+    progress: unknown
+    levelUp?: { newLevel: number; user: AuthUser; token: string }
+  }>(
     `/api/progress/${wordId}/review`,
     { method: 'POST', body: JSON.stringify({ correct }) },
   ),
@@ -118,6 +122,11 @@ export const api = {
   startSession: () => request<{ id: number }>('/api/sessions', { method: 'POST' }),
 
   endSession: (id: number) => request<{ ok: boolean }>(`/api/sessions/${id}/end`, { method: 'PATCH', keepalive: true }),
+
+  setHskLevel: (level: number) => request<AuthResponse>('/api/auth/hsk-level', {
+    method: 'PATCH',
+    body: JSON.stringify({ level }),
+  }),
 
   decks: () => request<{ decks: DeckInfo[] }>('/api/decks'),
 

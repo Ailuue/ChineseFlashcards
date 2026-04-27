@@ -169,7 +169,7 @@ const RegisterScreen = () => {
     setApiError(null)
     try {
       await register(username, password)
-      navigate('/')
+      navigate('/onboarding')
     } catch (err) {
       setApiError(err instanceof Error ? err.message : 'Registration failed')
     } finally {

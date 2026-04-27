@@ -15,6 +15,8 @@ interface AuthState {
   login: (username: string, password: string) => Promise<void>
   register: (username: string, password: string) => Promise<void>
   logout: () => void
+  updateHskLevel: (level: number) => Promise<void>
+  applySession: (user: AuthUser, token: string) => void
 }
 
 const AuthContext = createContext<AuthState | null>(null)
@@ -65,11 +67,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setToken(null)
   }, [])
 
+  const updateHskLevel = useCallback(async (level: number) => {
+    const { user: updated, token: newToken } = await api.setHskLevel(level)
+    persist(updated, newToken)
+  }, [persist])
+
+  const applySession = useCallback((u: AuthUser, t: string) => {
+    persist(u, t)
+  }, [persist])
+
   const value = useMemo(
     () => ({
-      user, token, isAuthenticated: !!user, login, register, logout,
+      user, token, isAuthenticated: !!user, login, register, logout, updateHskLevel, applySession,
     }),
-    [user, token, login, register, logout],
+    [user, token, login, register, logout, updateHskLevel, applySession],
   )
 
   return (

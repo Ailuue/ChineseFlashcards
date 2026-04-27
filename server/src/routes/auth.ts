@@ -18,6 +18,10 @@ const LoginSchema = z.object({
   password: z.string().min(1),
 })
 
+const HskLevelSchema = z.object({
+  level: z.number().int().min(1).max(6),
+})
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   const parsed = RegisterSchema.safeParse(req.body)
@@ -51,9 +55,9 @@ router.post('/register', async (req, res) => {
   const [user] = await db
     .insert(users)
     .values({ username, passwordHash, registeredFromIp: ip })
-    .returning({ id: users.id, username: users.username })
+    .returning({ id: users.id, username: users.username, hskLevel: users.hskLevel })
 
-  const token = signToken({ userId: user.id, username: user.username })
+  const token = signToken({ userId: user.id, username: user.username, hskLevel: user.hskLevel })
   res.status(201).json({ user, token })
 })
 
@@ -78,8 +82,8 @@ router.post('/login', async (req, res) => {
     return
   }
 
-  const token = signToken({ userId: user.id, username: user.username })
-  res.json({ user: { id: user.id, username: user.username }, token })
+  const token = signToken({ userId: user.id, username: user.username, hskLevel: user.hskLevel })
+  res.json({ user: { id: user.id, username: user.username, hskLevel: user.hskLevel }, token })
 })
 
 // GET /api/auth/me
@@ -93,6 +97,24 @@ router.get('/me', requireAuth, async (req, res) => {
     return
   }
   res.json(user)
+})
+
+// PATCH /api/auth/hsk-level
+router.patch('/hsk-level', requireAuth, async (req, res) => {
+  const parsed = HskLevelSchema.safeParse(req.body)
+  if (!parsed.success) {
+    res.status(400).json({ error: 'Level must be an integer between 1 and 6' })
+    return
+  }
+
+  const [user] = await db
+    .update(users)
+    .set({ hskLevel: parsed.data.level })
+    .where(eq(users.id, req.user!.userId))
+    .returning({ id: users.id, username: users.username, hskLevel: users.hskLevel })
+
+  const token = signToken({ userId: user.id, username: user.username, hskLevel: user.hskLevel })
+  res.json({ user, token })
 })
 
 export default router

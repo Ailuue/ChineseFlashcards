@@ -1,10 +1,13 @@
 import { Router } from 'express'
-import { eq, ilike, count } from 'drizzle-orm'
+import { eq, ilike, count, inArray, and } from 'drizzle-orm'
 import { z } from 'zod'
 import { db } from '../db'
 import { words, decks } from '../db/schema'
+import { requireAuth } from '../middleware/auth'
+import { allowedLevels } from '../utils/level'
 
 const router = Router()
+router.use(requireAuth)
 
 const QuerySchema = z.object({
   deck: z.string().optional(),
@@ -22,10 +25,12 @@ router.get('/', async (req, res) => {
   }
 
   const { deck, q, limit, offset } = parsed.data
+  const levelFilter = inArray(decks.level, allowedLevels(req.user!.hskLevel ?? 1))
 
   let whereClause
-  if (deck) whereClause = eq(decks.name, deck)
-  else if (q) whereClause = ilike(words.simplified, `%${q}%`)
+  if (deck) whereClause = and(levelFilter, eq(decks.name, deck))
+  else if (q) whereClause = and(levelFilter, ilike(words.simplified, `%${q}%`))
+  else whereClause = levelFilter
 
   const [countResult, rows] = await Promise.all([
     db
