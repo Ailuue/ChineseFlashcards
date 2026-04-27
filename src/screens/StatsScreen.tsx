@@ -35,8 +35,9 @@ const AccuracyChart = ({ points }: { points: number[] }) => {
   const chartW = w - LPAD - RPAD
   const chartH = h - TPAD - BPAD
   const n = points.length
+  const TOTAL = 30
 
-  const xOf = (i: number) => LPAD + (n <= 1 ? 0 : (i / (n - 1)) * chartW)
+  const xOf = (i: number) => LPAD + 4 + (i / (TOTAL - 1)) * (chartW - 8)
   const yOf = (v: number) => TPAD + (1 - v / 100) * chartH
 
   const pathD = points.map((v, i) => `${i === 0 ? 'M' : 'L'} ${xOf(i)} ${yOf(v)}`).join(' ')
@@ -61,14 +62,11 @@ const AccuracyChart = ({ points }: { points: number[] }) => {
       {n > 0 && <path d={areaD} fill="var(--fg)" opacity="0.08" />}
       {n > 0 && <path d={pathD} stroke="var(--fg)" strokeWidth="1.5" fill="none" />}
       {points.map((v, i) => (
-        <circle key={i} cx={xOf(i)} cy={yOf(v)} r={i === n - 1 ? 3 : 1.6} fill="var(--accent)" />
+        <circle key={i} cx={xOf(i)} cy={yOf(v)} r={3} fill={i === n - 1 ? 'var(--accent)' : 'var(--fg-dim)'} />
       ))}
-      {[1, 5, 10, 15, 20, 25, 30].filter((day) => day <= n).map((day) => (
-        <text key={day} x={xOf(day - 1)} y={h - 4} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">{day}</text>
+      {Array.from({ length: n }, (_, i) => (
+        <text key={i} x={xOf(i)} y={h - 4} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">{i + 1}</text>
       ))}
-      {n > 0 && n !== 1 && ![1, 5, 10, 15, 20, 25, 30].includes(n) && (
-        <text x={xOf(n - 1)} y={h - 4} fontSize="9" fill="var(--fg-dim)" fontFamily="var(--font-mono)" textAnchor="middle">{n}</text>
-      )}
     </svg>
   )
 }
