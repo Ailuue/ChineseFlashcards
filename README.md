@@ -50,7 +50,7 @@ cd server
 cp .env.example .env   # fill in DATABASE_URL, JWT_SECRET
 npm install
 npm run db:push        # push schema to database (dev)
-npm run db:seed        # seed HSK vocabulary (10 decks, ~150 words)
+npm run db:seed        # seed HSK vocabulary (136 decks, ~3,500 words)
 npm run dev            # start dev server with hot-reload (tsx watch)
 ```
 
@@ -192,6 +192,10 @@ Standard pinyin tone colors are used throughout:
 | 3rd (dipping)   | Green  |
 | 4th (falling)   | Blue   |
 | Neutral         | Gray   |
+
+## Data Sources
+
+HSK 3.0 vocabulary data (levels 1–5) sourced from [drkameleon/complete-hsk-vocabulary](https://github.com/drkameleon/complete-hsk-vocabulary).
 
 ## Deployment
 
