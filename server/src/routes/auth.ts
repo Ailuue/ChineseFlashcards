@@ -31,34 +31,39 @@ router.post('/register', async (req, res) => {
   }
 
   const { username, password } = parsed.data
+  const isProd = process.env.NODE_ENV === 'production'
+  const ip = isProd ? (req.ip ?? null) : null
 
-  const ip = req.ip ?? null
+  try {
+    const [existing, [ipCount]] = await Promise.all([
+      db.query.users.findFirst({ where: eq(users.username, username) }),
+      ip
+        ? db.select({ n: count() }).from(users).where(eq(users.registeredFromIp, ip))
+        : Promise.resolve([{ n: 0 }]),
+    ])
 
-  const [existing, [ipCount]] = await Promise.all([
-    db.query.users.findFirst({ where: eq(users.username, username) }),
-    ip
-      ? db.select({ n: count() }).from(users).where(eq(users.registeredFromIp, ip))
-      : Promise.resolve([{ n: 0 }]),
-  ])
+    if (existing) {
+      res.status(409).json({ error: 'Username already taken' })
+      return
+    }
 
-  if (existing) {
-    res.status(409).json({ error: 'Username already taken' })
-    return
+    if ((ipCount?.n ?? 0) >= 2) {
+      res.status(429).json({ error: 'Account creation limit reached for this network' })
+      return
+    }
+
+    const passwordHash = await bcrypt.hash(password, 12)
+    const [user] = await db
+      .insert(users)
+      .values({ username, passwordHash, registeredFromIp: ip })
+      .returning({ id: users.id, username: users.username, hskLevel: users.hskLevel })
+
+    const token = signToken({ userId: user.id, username: user.username, hskLevel: user.hskLevel })
+    res.status(201).json({ user, token })
+  } catch (err) {
+    console.error('Register error:', err)
+    res.status(500).json({ error: 'Registration failed — please try again' })
   }
-
-  if ((ipCount?.n ?? 0) >= 2) {
-    res.status(429).json({ error: 'Account creation limit reached for this network' })
-    return
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12)
-  const [user] = await db
-    .insert(users)
-    .values({ username, passwordHash, registeredFromIp: ip })
-    .returning({ id: users.id, username: users.username, hskLevel: users.hskLevel })
-
-  const token = signToken({ userId: user.id, username: user.username, hskLevel: user.hskLevel })
-  res.status(201).json({ user, token })
 })
 
 // POST /api/auth/login
