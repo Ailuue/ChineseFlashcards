@@ -139,4 +139,47 @@ export const api = {
     const query = qs.toString()
     return request<WordsResponse>(query ? `/api/words?${query}` : '/api/words')
   },
+
+  streamMnemonic: async (
+    word: { simplified: string; pinyin: string; meaning: string },
+    onChunk: (text: string) => void,
+    onDone: () => void,
+    onError: (err: string) => void,
+  ) => {
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${BASE}/api/ai/mnemonic`, {
+      method: 'POST',
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify(word),
+    })
+    if (!res.ok || !res.body) {
+      onError('Failed to connect')
+      return
+    }
+    const reader = res.body.getReader()
+    const decoder = new TextDecoder()
+    let buf = ''
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      buf += decoder.decode(value, { stream: true })
+      const lines = buf.split('\n')
+      buf = lines.pop() ?? ''
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue
+        const payload = line.slice(6)
+        if (payload === '[DONE]') { onDone(); return }
+        try {
+          const parsed = JSON.parse(payload) as { text?: string; error?: string }
+          if (parsed.error) { onError(parsed.error); return }
+          if (parsed.text) onChunk(parsed.text)
+        } catch { /* ignore malformed lines */ }
+      }
+    }
+    onDone()
+  },
 }

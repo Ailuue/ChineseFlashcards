@@ -8,6 +8,7 @@ import wordsRoutes from './routes/words'
 import decksRoutes from './routes/decks'
 import progressRoutes from './routes/progress'
 import sessionRoutes from './routes/sessions'
+import aiRoutes from './routes/ai'
 
 const app = express()
 const PORT = process.env.PORT ?? 3001
@@ -44,6 +45,7 @@ app.use('/api/words', wordsRoutes)
 app.use('/api/decks', decksRoutes)
 app.use('/api/progress', progressRoutes)
 app.use('/api/sessions', sessionRoutes)
+app.use('/api/ai', aiRoutes)
 
 // 404
 app.use((_req, res) => {

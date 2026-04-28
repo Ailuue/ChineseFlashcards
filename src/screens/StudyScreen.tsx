@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import type { SessionCard } from '../types'
 import { api, type Word } from '../api/client'
 import Icon from '../components/Icon'
+import { features } from '../config/features'
 import Pinyin from '../components/Pinyin'
 import SessionSummary from './SessionSummary'
 
@@ -50,6 +51,9 @@ const StudyScreen = () => {
   const [celebrate, setCelebrate] = useState<{ t: number } | null>(null)
   const [levelUpData, setLevelUpData] = useState<{ newLevel: number } | null>(null)
   const [done, setDone] = useState(false)
+  const mnemonicCache = useRef<Map<number, string>>(new Map())
+  const [mnemonicText, setMnemonicText] = useState('')
+  const [mnemonicLoading, setMnemonicLoading] = useState(false)
 
   useEffect(() => {
     setLoadedCards(null)
@@ -169,6 +173,28 @@ const StudyScreen = () => {
     const t = setTimeout(() => setLevelUpData(null), 5000)
     return () => clearTimeout(t)
   }, [levelUpData])
+
+  const currentWordId = queue[0]?.id
+  useEffect(() => {
+    setMnemonicText(currentWordId != null ? (mnemonicCache.current.get(currentWordId) ?? '') : '')
+    setMnemonicLoading(false)
+  }, [currentWordId])
+
+  const generateMnemonic = useCallback((e: React.MouseEvent) => {
+    e.stopPropagation()
+    const current = queue[0]
+    if (!current || mnemonicLoading) return
+    const wordId = current.id
+    setMnemonicLoading(true)
+    setMnemonicText('')
+    let acc = ''
+    api.streamMnemonic(
+      { simplified: current.simplified, pinyin: current.pinyin, meaning: current.meaning },
+      (chunk) => { acc += chunk; setMnemonicText(acc) },
+      () => { setMnemonicLoading(false); mnemonicCache.current.set(wordId, acc) },
+      () => { setMnemonicLoading(false) },
+    )
+  }, [queue, mnemonicLoading])
 
   const levelUpBanner = levelUpData && (
     <div
@@ -521,6 +547,52 @@ const StudyScreen = () => {
                     {card?.meaning}
                     &rdquo;
                   </div>
+                  {/* Mnemonic */}
+                  {features.mnemonic && (
+                    <div
+                      style={{ maxWidth: 340, textAlign: 'center' }}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {!mnemonicText && !mnemonicLoading && (
+                        <button
+                          type="button"
+                          onClick={generateMnemonic}
+                          style={{
+                            background: 'none',
+                            border: '1px solid var(--border)',
+                            color: 'var(--fg-dim)',
+                            fontFamily: 'var(--font-mono)',
+                            fontSize: 10,
+                            letterSpacing: '0.08em',
+                            padding: '3px 10px',
+                            cursor: 'pointer',
+                            borderRadius: 2,
+                            textTransform: 'uppercase',
+                          }}
+                        >
+                          ✦ mnemonic
+                        </button>
+                      )}
+                      {mnemonicLoading && !mnemonicText && (
+                        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--fg-dim)' }}>
+                          …
+                        </span>
+                      )}
+                      {mnemonicText && (
+                        <p style={{
+                          fontSize: 12,
+                          color: 'var(--fg-dim)',
+                          fontStyle: 'italic',
+                          lineHeight: 1.65,
+                          margin: 0,
+                        }}
+                        >
+                          {mnemonicText}
+                          {mnemonicLoading && '▌'}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="rate-in-card">
                   <button
