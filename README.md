@@ -22,6 +22,7 @@ A spaced-repetition flashcard app for HSK Chinese vocabulary. Built as a portfol
 - **Drizzle ORM** for schema, migrations, and queries
 - **JWT** authentication with bcrypt password hashing
 - **Zod** for request validation
+- **Anthropic SDK** for AI-generated mnemonics (streamed via SSE)
 
 ## Getting Started
 
@@ -78,7 +79,15 @@ Runs the API at `http://localhost:3001`.
 | `PORT`           | No       | `3001`                  |
 | `ALLOWED_ORIGIN` | No       | `http://localhost:5173` |
 
-Frontend uses `VITE_API_URL` (defaults to `http://localhost:3001`).
+| `WHITELISTED_IPS`  | No       | —                       | Comma-separated IPs exempt from the 2-accounts-per-IP registration limit |
+| `ANTHROPIC_API_KEY`| No       | —                       | Required to enable AI mnemonic generation (see Feature Flags)            |
+
+**Frontend**
+
+| Variable                 | Required | Default                    |
+| ------------------------ | -------- | -------------------------- |
+| `VITE_API_URL`           | No       | `http://localhost:3001`    |
+| `VITE_FEATURE_MNEMONIC`  | No       | off                        |
 
 ## Screens
 
@@ -99,6 +108,14 @@ Cards cycle through three states without changing routes:
 3. **Summary** — accuracy, streak, score; restart without a page reload
 
 Wrong cards are requeued two positions ahead. A streak of 3+ correct answers triggers a sparkle animation. Sessions can be loaded with a pre-fetched word list (Daily Mix, deck click), a deck filter, or the default SRS queue of due + new words.
+
+## Feature Flags
+
+Features are gated behind `VITE_FEATURE_*` environment variables. Unset or any value other than `"true"` means off — no errors, just hidden. Toggle by setting the variable in your deployment environment and redeploying.
+
+| Flag                    | Status       | Description                                                                 |
+| ----------------------- | ------------ | --------------------------------------------------------------------------- |
+| `VITE_FEATURE_MNEMONIC` | Experimental | AI mnemonic button on card back — streams a vivid 2–3 sentence memory story for the character. Requires `ANTHROPIC_API_KEY` on the server. Billed per generation via the Anthropic API (not included in a Claude Pro subscription). |
 
 ## API Reference
 
@@ -126,6 +143,7 @@ All authenticated routes require `Authorization: Bearer <token>`.
 | `POST`  | `/api/progress/:wordId/review` | ✓    | Record review (`{ correct: bool }`)      |
 | `POST`  | `/api/sessions`                | ✓    | Start a study session                    |
 | `PATCH` | `/api/sessions/:id/end`        | ✓    | End a study session                      |
+| `POST`  | `/api/ai/mnemonic`             | ✓    | Stream a mnemonic story for a word (SSE) |
 
 ## Project Structure
 
@@ -133,6 +151,7 @@ All authenticated routes require `Authorization: Bearer <token>`.
 src/                          # Frontend (React + Vite)
 ├── App.tsx                   # BrowserRouter + Routes + RequireAuth guard
 ├── api/client.ts             # Typed API client (all fetch calls)
+├── config/features.ts        # Feature flags (VITE_FEATURE_* env vars)
 ├── context/
 │   ├── AuthContext.tsx        # JWT auth state, persisted to localStorage
 │   └── TweaksContext.tsx      # Theme + display preferences (script, toneColor, etc.)
@@ -170,7 +189,8 @@ server/                        # Backend (Express + Drizzle + PostgreSQL)
 │   │   ├── words.ts           # list + search words
 │   │   ├── decks.ts           # list decks + deck detail
 │   │   ├── progress.ts        # SRS progress, SM-2 scheduling, all stats
-│   │   └── sessions.ts        # Study session start/end (time tracking)
+│   │   ├── sessions.ts        # Study session start/end (time tracking)
+│   │   └── ai.ts              # AI mnemonic generation (SSE streaming, experimental)
 │   ├── utils/
 │   │   ├── srs.ts             # SM-2 algorithm (nextReviewSchedule)
 │   │   └── shuffle.ts         # Fisher-Yates shuffle
